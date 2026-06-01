@@ -365,7 +365,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
 
 
 <div id="splash" onclick="enterSite()" style="cursor:none;background:#000;position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-  <div id="splashHint" style="position:relative;z-index:1;font-size:22px;letter-spacing:6px;color:rgba(255,255,255,.6);font-family:'Silkscreen',monospace;animation:splashPulse 2.5s ease-in-out infinite;user-select:none;pointer-events:none;text-transform:lowercase;">..click..</div>
+  <div id="splashHint" style="position:relative;z-index:1;font-size:22px;letter-spacing:6px;color:rgba(255,255,255,.6);font-family:'Silkscreen',monospace;animation:splashPulse 2.5s ease-in-out infinite;user-select:none;pointer-events:none;">click..</div>
 </div>
 
 
@@ -1296,29 +1296,22 @@ document.addEventListener('click',function(e){
 (function(){
   var el = document.getElementById('viewCount');
   var ns = 'jjxvnz-bio-v4';
-  var BASE = 3041; // número fixo de partida
+  var BASE = 3041;
 
   // Animação de count-up suave
   function animateCount(target) {
     if (!el) return;
-    var start = 0;
     var duration = 1200;
     var startTime = null;
     function step(ts) {
       if (!startTime) startTime = ts;
       var progress = Math.min((ts - startTime) / duration, 1);
-      // easeOutExpo
       var eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-      var current = Math.floor(eased * target);
-      el.textContent = current.toLocaleString('pt-BR');
+      el.textContent = Math.floor(eased * target).toLocaleString('pt-BR');
       if (progress < 1) requestAnimationFrame(step);
       else el.textContent = target.toLocaleString('pt-BR');
     }
     requestAnimationFrame(step);
-  }
-
-  function showCount(n) {
-    animateCount(n + BASE);
   }
 
   function pulseEye() {
@@ -1329,26 +1322,14 @@ document.addEventListener('click',function(e){
     }
   }
 
-  // Dedup por visitante (localStorage) — não soma a cada F5
-  var visited = false;
-  try { visited = localStorage.getItem('hv_' + ns) === '1'; } catch(e) {}
-
-  var endpoint = visited
-    ? 'https://api.counterapi.dev/v1/' + ns + '/views'      // só lê
-    : 'https://api.counterapi.dev/v1/' + ns + '/views/up';  // incrementa 1x
-
-  fetch(endpoint)
+  // Sempre incrementa a cada visita
+  fetch('https://api.counterapi.dev/v1/' + ns + '/views/up')
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if (typeof d.count === 'number') {
-        showCount(d.count);
-        pulseEye();
-        if (!visited) { try { localStorage.setItem('hv_' + ns, '1'); } catch(e) {} }
-      } else {
-        showCount(0);
-      }
+      if (typeof d.count === 'number') { animateCount(d.count + BASE); pulseEye(); }
+      else animateCount(BASE);
     })
-    .catch(function(){ showCount(0); });
+    .catch(function(){ if (el) el.textContent = (BASE).toLocaleString('pt-BR'); });
 })();
 
 // ── Audio playlist ────────────────────────────────────────
