@@ -1,58 +1,31 @@
-# JJ Links — jjxvnz.bio
+# JJ Links
 
-Site bio pessoal em HTML/CSS/JS, deploy na [Vercel](https://vercel.com).
+Página bio pessoal de **jjxvnz**, publicada em [jjxvnz.bio](https://www.jjxvnz.bio).
 
-**URL:** https://www.jjxvnz.bio
+Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com funções serverless para contagem de visitas e integrações em tempo real.
 
-## Funcionalidades
+## O que é
 
-- Perfil com presença Discord (Lanyard)
-- Player de música com playlist, reverb e equalizer (Web Audio API)
-- Contador de visitas (+1 a cada entrada / F5)
-- Notificação de visitas no Discord (webhook)
-- Design responsivo, vídeo de fundo, efeitos visuais
+Um link-in-bio com visual escuro, efeitos de glassmorphism e tilt 3D, pensado para reunir perfil, redes e mídia em uma única página.
 
-## Estrutura do projeto
+## O que faz
 
-Abra **esta pasta** no Cursor/VS Code (`WebLinks` na Área de Trabalho) — não crie outra pasta `WebLinks` dentro dela.
+- Exibe perfil e presença do Discord em tempo real (Lanyard)
+- Player de música com playlist aleatória, reverb/eco e equalizer (Web Audio API)
+- Contador público de visitas, atualizado a cada acesso
+- Notificação de novas visitas no Discord via webhook
+- Vídeo de fundo, cursor customizado, partículas e layout responsivo
 
-```
-WebLinks/                 ← raiz do repositório Git
-├── index.html            # Site (UI + lógica)
-├── public/               # Áudios, vídeo e assets estáticos
-├── api/
-│   ├── views.js          # GET — incrementa e retorna contagem
-│   └── visit.js          # POST — notifica visita no Discord
-├── vercel.json           # Cache e headers
-├── robots.txt
-└── sitemap.xml
-```
+## Estrutura
 
-## APIs (Vercel)
-
-| Rota | Método | Função |
-|------|--------|--------|
-| `/api/views` | GET | Incrementa visitante e devolve `{ count }` |
-| `/api/visit` | POST | Envia embed de visita ao Discord |
-
-### Variável de ambiente (Vercel)
-
-- `DISCORD_WEBHOOK_URL` — webhook para alertas de visita (`api/visit.js`)
-
-## Deploy
-
-Push na branch `main` → deploy automático na Vercel.
-
-```bash
-git push origin main
-```
-
-## Desenvolvimento local
-
-Servir a pasta na raiz (ex.: extensão Live Server ou `npx serve .`).
-
-As rotas `/api/*` só funcionam com `vercel dev` ou após deploy.
+| Parte | Descrição |
+|-------|-----------|
+| `index.html` | Interface e toda a lógica do front-end |
+| `public/` | Áudios da playlist e vídeo de fundo |
+| `api/views.js` | Contador de visitas |
+| `api/visit.js` | Registro de visitas no Discord |
+| `vercel.json` | Configuração de cache e deploy na Vercel |
 
 ## Licença
 
-Consulte [LICENSE](LICENSE).
+Código e arquivos do repositório protegidos por direitos autorais. Detalhes em [LICENSE](LICENSE).
