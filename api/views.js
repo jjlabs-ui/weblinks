@@ -21,8 +21,10 @@ async function counterUp() {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
   res.setHeader('Pragma', 'no-cache')
+  res.setHeader('CDN-Cache-Control', 'no-store')
+  res.setHeader('Vercel-CDN-Cache-Control', 'no-store')
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
