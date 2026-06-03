@@ -57,23 +57,33 @@ export default async function handler(req, res) {
     const flag = countryFlag(geo.countryCode)
 
     const location = geo.city
-      ? `${flag} ${geo.city}, ${geo.regionName} — ${geo.country}`
-      : `${flag} ${geo.country || 'Desconhecido'}`
+      ? `${flag}  ${geo.city}, ${geo.regionName}\n└ ${geo.country}`
+      : `${flag}  ${geo.country || 'Desconhecido'}`
 
     const now = new Date()
     const brt = new Intl.DateTimeFormat('pt-BR', {
       timeZone: 'America/Sao_Paulo',
+      day: '2-digit', month: '2-digit',
       hour: '2-digit', minute: '2-digit',
     }).format(now)
 
     const embed = {
-      title: '🔔 Nova visita · jjxvnz.bio',
+      title: '✨  Nova visita no site',
+      url: 'https://www.jjxvnz.bio',
       color: 0x000000,
-      fields: [
-        { name: '🌐 IP', value: `\`${ip}\``, inline: false },
-        { name: '📍 Localização', value: location, inline: false },
-      ],
-      footer: { text: `🕐 Hoje às ${brt}` },
+      description: [
+        '```',
+        '  jjxvnz.bio',
+        '```',
+        '',
+        '📍  **Localização**',
+        location,
+        '',
+        '🌐  **Endereço IP**',
+        '_toque para revelar_',
+        `||\`${ip}\`||`,
+      ].join('\n'),
+      footer: { text: `🕐  ${brt}  ·  jjxvnz.bio` },
       timestamp: now.toISOString(),
     }
 
