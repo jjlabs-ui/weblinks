@@ -40,7 +40,11 @@ export default async function handler(req, res) {
     'https://discord.com/api/webhooks/1511686757219831879/xp7HsTj0kzSontdURNLQuU16XsvrSIAbhaFBf9t50ANcO7LBt7S4FhMfepdhOotOZ34O'
 
   try {
-    const { ua, lang, ref, utm_source, w, h } = req.body || {}
+    let body = req.body
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body) } catch { body = {} }
+    }
+    const { ua, lang, ref, utm_source, w, h } = body || {}
 
     const ip =
       req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
@@ -136,13 +140,14 @@ export default async function handler(req, res) {
     })
 
     if (!wh.ok) {
-      console.error('Discord webhook failed', wh.status, await wh.text())
+      const errText = await wh.text().catch(() => '')
+      console.error('Discord webhook failed', wh.status, errText)
       return res.status(502).json({ ok: false, error: 'webhook failed' })
     }
 
     return res.status(200).json({ ok: true })
   } catch (err) {
-    console.error(err)
+    console.error('visit handler error', err)
     return res.status(500).json({ error: 'Internal error' })
   }
 }
