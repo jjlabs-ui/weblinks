@@ -1285,13 +1285,13 @@ document.addEventListener('click',function(e){
   document.body.appendChild(r);setTimeout(function(){r.remove()},700);
 });
 
-// ── Views counter (sempre incrementa ao entrar) ──────────
+// ── Views counter (incrementa a cada entrada / F5) ───────
 (function(){
   var el = document.getElementById('viewCount');
   var ns = 'jjxvnz-bio-v4';
-  var BASE = 3041;
+  var LEGACY_BASE = 3041;
+  var migrateKey = 'jjxvnz_hits_v5';
 
-  // Animação de count-up suave
   function animateCount(target) {
     if (!el) return;
     var duration = 1200;
@@ -1315,14 +1315,46 @@ document.addEventListener('click',function(e){
     }
   }
 
-  // Incrementa toda visita — sem limite de IP
-  fetch('https://api.counterapi.dev/v1/' + ns + '/hits/up')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if (typeof d.count === 'number') { animateCount(d.count + BASE); pulseEye(); }
-      else animateCount(BASE);
-    })
-    .catch(function(){ if (el) el.textContent = (BASE).toLocaleString('pt-BR'); });
+  function showCount(n) {
+    if (typeof n !== 'number') return;
+    animateCount(n);
+    pulseEye();
+  }
+
+  function increment() {
+    fetch('https://api.counterapi.dev/v1/' + ns + '/hits/up/')
+      .then(function(r) {
+        if (!r.ok) throw new Error('up failed');
+        return r.json();
+      })
+      .then(function(d) {
+        if (typeof d.count === 'number') showCount(d.count);
+        else throw new Error('bad count');
+      })
+      .catch(function() {
+        fetch('https://api.counterapi.dev/v1/' + ns + '/hits/')
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(d) {
+            if (d && typeof d.count === 'number') showCount(d.count);
+            else if (el) el.textContent = LEGACY_BASE.toLocaleString('pt-BR');
+          })
+          .catch(function() {
+            if (el) el.textContent = LEGACY_BASE.toLocaleString('pt-BR');
+          });
+      });
+  }
+
+  // Uma vez: preserva o 3041 histórico na API; depois cada F5 soma +1
+  if (!localStorage.getItem(migrateKey)) {
+    fetch('https://api.counterapi.dev/v1/' + ns + '/hits/set?count=' + LEGACY_BASE)
+      .then(function() {
+        localStorage.setItem(migrateKey, '1');
+        showCount(LEGACY_BASE);
+      })
+      .catch(function() { increment(); });
+  } else {
+    increment();
+  }
 })();
 
 // ── Audio playlist ────────────────────────────────────────
