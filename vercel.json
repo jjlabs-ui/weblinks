@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "installCommand": "npm install --omit=dev",
   "routes": [
     { "src": "/(.*)", "dest": "/$1" }
   ],
@@ -12,12 +11,6 @@
         { "key": "Pragma", "value": "no-cache" },
         { "key": "CDN-Cache-Control", "value": "no-store" },
         { "key": "Vercel-CDN-Cache-Control", "value": "no-store" }
-      ]
-    },
-    {
-      "source": "/api/visit",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }
       ]
     },
     {
