@@ -468,13 +468,6 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
 
   <p class="bio" id="mainBio"></p>
 
-  <div class="location loc-anim" id="mainLocation" style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.4);letter-spacing:1px;margin-top:2px;text-transform:uppercase;font-weight:500;">
-    <svg class="loc-pin" width="11" height="13" viewBox="0 0 24 28" fill="currentColor">
-      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 16 12 16s12-7 12-16C24 5.4 18.6 0 12 0zm0 16.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"/>
-    </svg>
-    <span class="loc-text">Mato Grosso do Sul · MS</span>
-  </div>
-
   <div class="divider" id="mainDivider"></div>
 
   <div class="socials-row">
@@ -1322,8 +1315,8 @@ document.addEventListener('click',function(e){
     }
   }
 
-  // Sempre incrementa a cada visita
-  fetch('https://api.counterapi.dev/v1/' + ns + '/views/up')
+  // Incrementa toda visita — sem limite de IP
+  fetch('https://api.counterapi.dev/v1/' + ns + '/hits/up')
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (typeof d.count === 'number') { animateCount(d.count + BASE); pulseEye(); }
