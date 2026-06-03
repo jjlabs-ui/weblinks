@@ -11,8 +11,10 @@ function countryFlag(code) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL ||
-    'https://discord.com/api/webhooks/1511686757219831879/xp7HsTj0kzSontdURNLQuU16XsvrSIAbhaFBf9t50ANcO7LBt7S4FhMfepdhOotOZ34O'
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
+  if (!webhookUrl) {
+    return res.status(200).json({ ok: true, skipped: 'DISCORD_WEBHOOK_URL not set' })
+  }
 
   try {
     const { ua, lang, ref, utm_source, w, h } = req.body || {}

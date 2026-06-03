@@ -1,27 +1,55 @@
-# Weblinks — Personal Site
+# JJ Links — jjxvnz.bio
 
+Site bio pessoal em HTML/CSS/JS, deploy na [Vercel](https://vercel.com).
 
-Site pessoal com integração Discord em tempo real, player de música com efeitos de áudio e design premium.
+**URL:** https://www.jjxvnz.bio
 
 ## Funcionalidades
 
-- Design dark com glassmorphism e efeito tilt 3D
-- Player de música com reverb/eco e equalizer (Web Audio API)
-- Integração Discord via Lanyard (WebSocket) — avatar, status, atividades e Spotify em tempo real
-- Cursor customizado com trail de partículas
-- Contador de visitas
-- Responsivo (mobile + desktop)
-- Vídeo de fundo em preto e branco
-- Deploy automático via Vercel
+- Perfil com presença Discord (Lanyard)
+- Player de música com playlist, reverb e equalizer (Web Audio API)
+- Contador de visitas (+1 a cada entrada / F5)
+- Notificação de visitas no Discord (webhook)
+- Design responsivo, vídeo de fundo, efeitos visuais
 
-## Tecnologias
+## Estrutura do projeto
 
-- HTML / CSS / JavaScript (vanilla)
-- Vite
-- Vercel
-- Lanyard API (Discord presence)
-- Web Audio API
+```
+├── index.html      # Site (UI + lógica)
+├── public/         # Áudios, vídeo e assets estáticos
+├── api/
+│   ├── views.js    # GET — incrementa e retorna contagem
+│   └── visit.js    # POST — notifica visita no Discord
+├── vercel.json     # Cache e headers
+├── robots.txt
+└── sitemap.xml
+```
+
+## APIs (Vercel)
+
+| Rota | Método | Função |
+|------|--------|--------|
+| `/api/views` | GET | Incrementa visitante e devolve `{ count }` |
+| `/api/visit` | POST | Envia embed de visita ao Discord |
+
+### Variável de ambiente (Vercel)
+
+- `DISCORD_WEBHOOK_URL` — webhook para alertas de visita (`api/visit.js`)
+
+## Deploy
+
+Push na branch `main` → deploy automático na Vercel.
+
+```bash
+git push origin main
+```
+
+## Desenvolvimento local
+
+Servir a pasta na raiz (ex.: extensão Live Server ou `npx serve .`).
+
+As rotas `/api/*` só funcionam com `vercel dev` ou após deploy.
 
 ## Licença
 
-Consulte o arquivo [LICENSE](LICENSE).
+Consulte [LICENSE](LICENSE).
