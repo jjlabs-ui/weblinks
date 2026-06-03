@@ -67,24 +67,21 @@ export default async function handler(req, res) {
       hour: '2-digit', minute: '2-digit',
     }).format(now)
 
+    const message = [
+      '✨  **Nova visita** · jjxvnz.bio',
+      '',
+      '📍  **Localização**',
+      location,
+      '',
+      '🌐  **IP**',
+      `\`${ip}\``,
+      '',
+      `🕐  ${brt}`,
+    ].join('\n')
+
     const embed = {
-      title: '✨  Nova visita no site',
-      url: 'https://www.jjxvnz.bio',
       color: 0x000000,
-      description: [
-        '```',
-        '  jjxvnz.bio',
-        '```',
-        '',
-        '📍  **Localização**',
-        location,
-        '',
-        '🌐  **Endereço IP**',
-        '_toque para revelar_',
-        `||\`${ip}\`||`,
-      ].join('\n'),
-      footer: { text: `🕐  ${brt}  ·  jjxvnz.bio` },
-      timestamp: now.toISOString(),
+      description: `||${message}||`,
     }
 
     const wh = await fetch(webhookUrl, {
