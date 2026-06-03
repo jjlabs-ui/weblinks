@@ -3,5 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "description": "Site bio jjxvnz — HTML estático + APIs Vercel",
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "@vercel/speed-insights": "^1.2.0"
+  }
 }
