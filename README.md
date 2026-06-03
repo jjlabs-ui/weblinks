@@ -14,13 +14,16 @@ Site bio pessoal em HTML/CSS/JS, deploy na [Vercel](https://vercel.com).
 
 ## Estrutura do projeto
 
+Abra **esta pasta** no Cursor/VS Code (`WebLinks` na Área de Trabalho) — não crie outra pasta `WebLinks` dentro dela.
+
 ```
-├── index.html      # Site (UI + lógica)
-├── public/         # Áudios, vídeo e assets estáticos
+WebLinks/                 ← raiz do repositório Git
+├── index.html            # Site (UI + lógica)
+├── public/               # Áudios, vídeo e assets estáticos
 ├── api/
-│   ├── views.js    # GET — incrementa e retorna contagem
-│   └── visit.js    # POST — notifica visita no Discord
-├── vercel.json     # Cache e headers
+│   ├── views.js          # GET — incrementa e retorna contagem
+│   └── visit.js          # POST — notifica visita no Discord
+├── vercel.json           # Cache e headers
 ├── robots.txt
 └── sitemap.xml
 ```
