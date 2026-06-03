@@ -1,56 +1,10 @@
 Copyright (c) 2026 João Pedro. All rights reserved.
 
-## JJ Links (jjxvnz.bio)
+The source code and assets in this repository (the "Software") for JJ Links
+(jjxvnz.bio) are protected by copyright. No license is granted to use, copy,
+modify, distribute, or exploit the Software without prior written permission
+from the copyright holder. Unauthorized use may result in legal action.
 
-This repository contains the source code and assets for **JJ Links**, a personal
-bio-link website, including HTML, CSS, JavaScript, and related serverless
-components (collectively, the "Software").
-
-## Ownership and reservation of rights
-
-The Software is protected by copyright and other applicable intellectual
-property laws. Except as required by mandatory law, **no license or right** is
-granted—express or implied—to use, copy, modify, merge, publish, distribute,
-sublicense, sell, or otherwise exploit any part of the Software without prior
-written authorization from the copyright holder.
-
-## Prohibited uses
-
-Without express written permission, you may not:
-
-- Copy, reproduce, or mirror the Software or any substantial portion thereof;
-- Modify, adapt, translate, or create derivative works based on the Software;
-- Distribute, sublicense, lease, lend, or commercially exploit the Software;
-- Remove or alter copyright notices, attribution, or proprietary markings;
-- Use the Software in any manner that infringes the rights of the copyright holder
-  or any third party.
-
-Unauthorized use may result in civil and criminal liability under applicable law.
-
-## Third-party content
-
-Music, trademarks, APIs, images, and other materials from third parties (including
-but not limited to Discord, streaming platforms, and content delivery networks)
-remain the property of their respective owners. The Software may reference or
-integrate such materials only in accordance with the terms of those services.
-Nothing in this notice grants any rights to third-party content.
-
-## Disclaimer of warranties
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
-
-## Limitation of liability
-
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE COPYRIGHT
-HOLDER BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
-PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, DATA, GOODWILL, OR OTHER INTANGIBLE
-LOSSES, ARISING OUT OF OR IN CONNECTION WITH THE USE OF OR INABILITY TO USE THE
-SOFTWARE, WHETHER BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), OR
-ANY OTHER LEGAL THEORY, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-
-## Governing law
-
-This notice shall be interpreted in accordance with the laws applicable to the
-copyright holder's jurisdiction, without regard to conflict-of-law principles.
+Third-party content (APIs, media, trademarks) belongs to its respective owners.
+The Software is provided "AS IS", without warranties. The copyright holder shall
+not be liable for any damages arising from use of the Software.
