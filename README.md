@@ -2,7 +2,7 @@
 
 Página bio pessoal de **jjxvnz**, publicada em [jjxvnz.bio](https://www.jjxvnz.bio).
 
-Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com funções serverless para contagem de visitas e integrações em tempo real.
+Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com integrações em tempo real e contador público de acessos.
 
 ## O que é
 
