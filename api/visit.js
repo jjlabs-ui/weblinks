@@ -89,38 +89,15 @@ export default async function handler(req, res) {
       ? `${flag} ${geo.city}, ${geo.regionName} — ${geo.country}`
       : `${flag} ${geo.country || 'Desconhecido'}`
 
-    const flags = []
-    if (geo.proxy)   flags.push('VPN/Proxy')
-    if (geo.hosting) flags.push('Datacenter')
-
-    // Embed limpo
     const embed = {
       title: `${flag} Nova visita — jjxvnz.bio`,
       color: isBrazil ? 0x009c3b : 0x1a1a2e,
       description: [
         `\`${ip}\`  ·  ${brt}`,
         location,
-        geo.isp ? `${geo.isp}` : null,
-        flags.length ? `⚠️ ${flags.join(' · ')}` : null,
+        geo.proxy ? '⚠️ VPN/Proxy' : null,
+        geo.hosting ? '⚠️ Datacenter' : null,
       ].filter(Boolean).join('\n'),
-      fields: [
-        {
-          name: 'Dispositivo',
-          value: `${isMobile ? '📱' : '🖥️'} ${browser} · ${os}${w && h ? `\n${w}×${h}` : ''}`,
-          inline: true,
-        },
-        {
-          name: 'Origem',
-          value: source,
-          inline: true,
-        },
-        {
-          name: 'Idioma',
-          value: lang || '?',
-          inline: true,
-        },
-      ],
-      footer: { text: `IP: ${ip}` },
       timestamp: now.toISOString(),
     }
 
