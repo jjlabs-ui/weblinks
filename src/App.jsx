@@ -255,13 +255,19 @@ export default function App() {
     const run = async () => {
       try {
         const ns = (CONFIG.name || 'default').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase()
-        const key = 'hv_' + ns
+        const base = `https://api.counterapi.dev/v1/${ns}/views`
+        const key = `hv_${ns}_v2`
         const visited = localStorage.getItem(key)
-        const url = visited ? `https://api.counterapi.dev/v1/${ns}/views` : `https://api.counterapi.dev/v1/${ns}/views/up`
-        const d = await fetch(url).then(r => r.json())
+        const url = visited ? `${base}/` : `${base}/up/`
+        const res = await fetch(url)
+        if (!res.ok) return
+        const d = await res.json()
+        if (typeof d?.count !== 'number') return
+        setViews(d.count)
         if (!visited) localStorage.setItem(key, '1')
-        if (typeof d?.count === 'number') setViews(d.count)
-      } catch {}
+      } catch {
+        /* rede / bloqueador de anúncios */
+      }
     }
     run()
   }, [])
