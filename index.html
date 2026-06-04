@@ -362,7 +362,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
 <canvas id="particleCanvas"></canvas>
 <div style="position:fixed;inset:0;background:#000;z-index:0;pointer-events:none;"></div>
 <video id="bgVideo" autoplay muted loop playsinline preload="metadata" style="opacity:.35;filter:brightness(0.55) saturate(1.4);">
-  <source src="/videoplayback.mp4" type="video/mp4"/>
+  <source src="/public/videoplayback.mp4" type="video/mp4"/>
 </video>
 
 
@@ -1070,6 +1070,10 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
 // ── Mobile detection ─────────────────────────────────────
 var IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 700;
 
+// Mídia em /public/ (Vercel serve a pasta com esse prefixo)
+var MEDIA_BASE = '/public/';
+function mediaUrl(file){ return encodeURI(MEDIA_BASE + file.replace(/^\//, '')); }
+
 // ── Em mobile: remove video de fundo (economia de banda + bateria) ──
 if (IS_MOBILE) {
   var bgv = document.getElementById('bgVideo');
@@ -1080,6 +1084,15 @@ if (IS_MOBILE) {
     bgv.load();
     bgv.style.display = 'none';
   }
+} else {
+  (function(){
+    var bgv = document.getElementById('bgVideo');
+    if (!bgv) return;
+    bgv.addEventListener('loadeddata', function(){ bgv.play().catch(function(){}); });
+    bgv.addEventListener('error', function(){
+      console.warn('Vídeo de fundo não carregou — verifica /public/videoplayback.mp4');
+    });
+  })();
 }
 
 // ── Themes ────────────────────────────────────────────────
@@ -1327,11 +1340,11 @@ document.addEventListener('click',function(e){
 
 // ── Audio playlist ────────────────────────────────────────
 var playlist=[
-  {src:'/2. DROPO, zTokyo - Memórias.mp3',                          title:'Memórias',         artist:'DROPO, zTokyo',   cover:'https://cdn-images.dzcdn.net/images/cover/440a79a0e4d7d1d60e7f5d7ef2bd6c1f/250x250-000000-80-0-0.jpg' },
-  {src:'/2. Dudu x Leozin - Tudo acaba (Prod. Ecologyk).mp3',       title:'Tudo Acaba',       artist:'Dudu x Leozin',   cover:'https://cdn-images.dzcdn.net/images/cover/070c38c828cfdb9020cec145aff21fef/250x250-000000-80-0-0.jpg' },
-  {src:'/lilgiela33 - Mesma Pessoa (prod. peedzh).mp3',              title:'Mesma Pessoa',     artist:'lilgiela33',      cover:'https://cdn-images.dzcdn.net/images/cover/2eeba4f412a69a85d56a43f2944d13b8/250x250-000000-80-0-0.jpg' },
-  {src:'/lilgiela33 - Pixei a casa (Áudio Oficial).mp3',             title:'Pixei a Casa',     artist:'lilgiela33',      cover:'https://cdn-images.dzcdn.net/images/cover/2eeba4f412a69a85d56a43f2944d13b8/250x250-000000-80-0-0.jpg' },
-  {src:'/Nosred - eu amo a hello kitty ✧˚🎀.mp3',                    title:'Eu Amo a Hello Kitty', artist:'Nosred',      cover:'https://cdn-images.dzcdn.net/images/cover/9e10d6acfd1bcb86b4bb75f781d063c8/250x250-000000-80-0-0.jpg' }
+  {src:mediaUrl('2. DROPO, zTokyo - Memórias.mp3'),                          title:'Memórias',         artist:'DROPO, zTokyo',   cover:'https://cdn-images.dzcdn.net/images/cover/440a79a0e4d7d1d60e7f5d7ef2bd6c1f/250x250-000000-80-0-0.jpg' },
+  {src:mediaUrl('2. Dudu x Leozin - Tudo acaba (Prod. Ecologyk).mp3'),       title:'Tudo Acaba',       artist:'Dudu x Leozin',   cover:'https://cdn-images.dzcdn.net/images/cover/070c38c828cfdb9020cec145aff21fef/250x250-000000-80-0-0.jpg' },
+  {src:mediaUrl('lilgiela33 - Mesma Pessoa (prod. peedzh).mp3'),              title:'Mesma Pessoa',     artist:'lilgiela33',      cover:'https://cdn-images.dzcdn.net/images/cover/2eeba4f412a69a85d56a43f2944d13b8/250x250-000000-80-0-0.jpg' },
+  {src:mediaUrl('lilgiela33 - Pixei a casa (Áudio Oficial).mp3'),             title:'Pixei a Casa',     artist:'lilgiela33',      cover:'https://cdn-images.dzcdn.net/images/cover/2eeba4f412a69a85d56a43f2944d13b8/250x250-000000-80-0-0.jpg' },
+  {src:mediaUrl('Nosred - eu amo a hello kitty ✧˚🎀.mp3'),                    title:'Eu Amo a Hello Kitty', artist:'Nosred',      cover:'https://cdn-images.dzcdn.net/images/cover/9e10d6acfd1bcb86b4bb75f781d063c8/250x250-000000-80-0-0.jpg' }
 ];
 playlist.sort(function(){return Math.random()-.5});
 var trackIdx=0,audio=new Audio();audio.volume=0.05;
@@ -1526,7 +1539,9 @@ function playTrack(){
   initAudioCtx();
   if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
   // Começa no volume atual (baixo na primeira vez) e sobe suavemente
-  audio.play().catch(function(){});
+  audio.play().catch(function(err){
+    console.warn('Áudio bloqueado ou ficheiro em falta:', err);
+  });
   fadeVolumeTo(_targetVol, 1800); // 1.8s de fade-in
   if(mpIPlay)mpIPlay.style.display='none';
   if(mpIPause)mpIPause.style.display='block';
@@ -1603,6 +1618,14 @@ function enterSite() {
   splash.style.pointerEvents = 'none';
   setTimeout(function(){ splash.style.display = 'none'; }, 900);
   app.classList.add('visible');
+  var bgv = document.getElementById('bgVideo');
+  if (bgv && !IS_MOBILE) {
+    bgv.style.display = '';
+    if (!bgv.src && bgv.querySelector('source')) {
+      bgv.src = bgv.querySelector('source').src;
+    }
+    bgv.play().catch(function(){});
+  }
   loadTrack(trackIdx);
   playTrack();
 }
