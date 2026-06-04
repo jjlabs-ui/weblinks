@@ -47,7 +47,7 @@ body{font-family:'Inter',-apple-system,sans-serif;min-height:100vh;display:flex;
 }
 #cursor-ring{display:none !important;}
 #particleCanvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;display:none}
-#bgVideo{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;}
+#bgVideo{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;opacity:.32;filter:grayscale(100%) brightness(0.4) contrast(1.05);}
 
 #splash{transition:opacity .8s ease}
 #splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -361,7 +361,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
 <div id="cursor-ring"></div>
 <canvas id="particleCanvas"></canvas>
 <div style="position:fixed;inset:0;background:#000;z-index:0;pointer-events:none;"></div>
-<video id="bgVideo" autoplay muted loop playsinline preload="metadata" style="opacity:.35;filter:brightness(0.55) saturate(1.4);">
+<video id="bgVideo" autoplay muted loop playsinline preload="metadata">
   <source src="/public/videoplayback.mp4" type="video/mp4"/>
 </video>
 
@@ -1115,7 +1115,7 @@ var T = {
     viewsBg:'transparent', viewsBorder:'rgba(255,255,255,.08)',
     splashBg:'#000', splashText:'rgba(255,255,255,.5)',
     cursorBg:'#fff', ringBorder:'rgba(255,255,255,.4)',
-    videoOp:'.35', particleR:255, particleG:255, particleB:255,
+    videoOp:'.32', particleR:255, particleG:255, particleB:255,
     rippleColor:'rgba(255,255,255,.06)',
     bio:'',
     tag:'Programador',
@@ -1177,7 +1177,7 @@ function applyTheme(m) {
   _set('cursor','color',t.cursorBg);
   _set('cursor-ring','border','1px solid '+t.ringBorder);
   _set('bgVideo','opacity',t.videoOp);
-  _set('bgVideo','filter','brightness(0.55) saturate(1.4)');
+  _set('bgVideo','filter','grayscale(100%) brightness(0.4) contrast(1.05)');
   _set('splash','background',t.splashBg);
   _set('splashHint','color',t.splashText);
   _set('mpPlay','background',t.playBg);
