@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="preconnect" href="https://api.lanyard.rest"/>
 <link rel="preconnect" href="https://cdn.discordapp.com"/>
+<link rel="preconnect" href="https://media.discordapp.net"/>
 <link rel="dns-prefetch" href="https://api.deezer.com"/>
 <link rel="dns-prefetch" href="https://i.scdn.co"/>
 
@@ -67,6 +68,32 @@ body{font-family:'Inter',-apple-system,sans-serif;min-height:100vh;display:flex;
 .tilt-card:hover::before{opacity:1}
 .tilt-card::after{content:'';position:absolute;inset:-1px;border-radius:25px;background:linear-gradient(135deg,rgba(128,128,128,.12) 0%,transparent 40%,transparent 60%,rgba(128,128,128,.07) 100%);pointer-events:none;opacity:0;transition:opacity .3s}
 .tilt-card:hover::after{opacity:1}
+
+/* Glass 3D — mesmo efeito da borda principal (tilt-card) */
+.glass-card{
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .12s ease,box-shadow .12s ease,background 1s,border-color 1s;
+  overflow:hidden;
+}
+.glass-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(128,128,128,.09) 0%,transparent 62%);
+  pointer-events:none;opacity:0;transition:opacity .2s;z-index:0;
+}
+.glass-card::after{
+  content:'';position:absolute;inset:-1px;border-radius:inherit;
+  background:linear-gradient(135deg,rgba(128,128,128,.14) 0%,transparent 42%,transparent 58%,rgba(128,128,128,.08) 100%);
+  pointer-events:none;opacity:0;transition:opacity .3s;z-index:0;
+}
+.glass-card:hover::before,.glass-card.open::before{opacity:.85}
+.glass-card:hover::after,.glass-card.open::after{opacity:1}
+.glass-card-inner{
+  position:relative;z-index:1;
+  transform-style:preserve-3d;
+  display:flex;flex-direction:column;gap:14px;width:100%;
+}
+.glass-card-inner > *{transform:translateZ(14px)}
 
 .tilt-inner{transform-style:preserve-3d;display:flex;flex-direction:column;align-items:center;gap:16px;width:100%}
 .tilt-inner > *{transform:translateZ(18px);opacity:0;animation:itemIn .5s ease forwards}
@@ -221,7 +248,8 @@ body::after{display:none;}
   *{cursor:auto !important}
   #musicWidget{top:10px !important;right:10px !important}
   #musicBtn{width:34px !important;height:34px !important}
-  #musicPanel{width:250px !important;right:-10px !important}
+  #musicPanel{width:250px !important;right:-10px !important;transform:none !important}
+  #musicPanel::before,#musicPanel::after{display:none !important}
 }
 
 /* ── Music widget fixo ── */
@@ -277,18 +305,20 @@ body::after{display:none;}
 #musicPanel{
   position:absolute;top:54px;right:0;
   width:340px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;
   padding:16px;
-  backdrop-filter:blur(28px);
-  -webkit-backdrop-filter:blur(28px);
+  border-radius:20px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
   display:none;
-  flex-direction:column;gap:14px;
-  box-shadow:0 12px 50px rgba(0,0,0,.3);
+  flex-direction:column;
+  background:rgba(255,255,255,.028);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 0 0 1px rgba(255,255,255,.06),0 20px 60px rgba(0,0,0,.7);
+  transform-origin:top right;
   animation:panelIn .2s ease;
 }
 #musicPanel.open{display:flex}
+#musicPanel .glass-card-inner{gap:14px}
 @keyframes panelIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 .mp-top{display:flex;align-items:center;gap:14px;}
 .mp-cover{width:58px;height:58px;border-radius:12px;object-fit:cover;flex-shrink:0;filter:grayscale(10%);box-shadow:0 4px 16px rgba(0,0,0,.5);}
@@ -315,39 +345,80 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
 
 /* ── Server Tag Tooltip ── */
 .server-tag-wrap{position:relative;z-index:100;}
-.server-tag-wrap:hover .profile-tag{border-color:transparent!important;background:transparent!important;box-shadow:none;color:#fff!important;}
+.server-tag-wrap:hover .profile-tag,
+.server-tag-wrap.stt-open .profile-tag{border-color:transparent!important;background:transparent!important;box-shadow:none;color:#fff!important;}
+/* Ponte invisível tag → card (evita fechar no vão) */
+.server-tag-wrap.stt-open::before{
+  content:'';position:absolute;right:0;bottom:100%;
+  width:280px;height:20px;pointer-events:auto;
+}
 .server-tooltip{
-  position:absolute;bottom:calc(100% + 12px);right:0;
+  position:absolute;bottom:calc(100% - 4px);right:0;
   width:280px;z-index:99999;
-  background:rgba(10,10,12,0.55);
-  border:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;
+  background:#36373e;
+  border:1px solid rgba(0,0,0,.35);
   border-radius:16px;
   overflow:hidden;
-  box-shadow:0 8px 40px rgba(0,0,0,.6);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  opacity:0;visibility:hidden;transform:translateY(4px);
+  box-shadow:0 8px 32px rgba(0,0,0,.55);
+  opacity:0;visibility:hidden;transform:translateY(6px);
   transition:opacity .15s,visibility .15s,transform .15s;
   pointer-events:none;
 }
 .server-tooltip.stt-hidden{display:none!important;}
-.server-tag-wrap:hover .server-tooltip:not(.stt-hidden){opacity:1;visibility:visible;transform:translateY(0);}
-.stt-banner{width:100%;height:80px;background:linear-gradient(135deg,#1a1a1a,#2b2d31);background-size:cover;background-position:center;}
+.server-tag-wrap:hover .server-tooltip:not(.stt-hidden),
+.server-tag-wrap.stt-open .server-tooltip:not(.stt-hidden){
+  opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto;
+}
+.stt-banner-wrap{
+  position:relative;height:86px;flex-shrink:0;overflow:visible;
+}
+.stt-banner{
+  position:absolute;inset:0;overflow:hidden;
+  background:rgba(255,255,255,.04);
+}
+.stt-banner img{
+  width:100%;height:100%;object-fit:cover;object-position:center center;
+  display:block;pointer-events:none;
+}
+.stt-banner-wrap::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:48px;
+  background:linear-gradient(to bottom,transparent,rgba(0,0,0,.5));
+  pointer-events:none;z-index:1;
+}
 .stt-icon{
+  position:absolute;left:14px;bottom:-22px;
   width:48px;height:48px;border-radius:12px;
-  border:3px solid rgba(255,255,255,.06);background:transparent;
+  border:3px solid #36373e;
+  background:#36373e;
+  box-shadow:0 4px 18px rgba(0,0,0,.45);
   display:flex;align-items:center;justify-content:center;
   font-size:18px;font-weight:700;color:#fff;
-  margin-top:-24px;margin-left:14px;position:relative;z-index:1;
-  overflow:hidden;
+  margin:0;z-index:3;overflow:hidden;
 }
-.stt-icon img{width:100%;height:100%;object-fit:cover;}
-.stt-body{padding:8px 14px 14px;display:flex;flex-direction:column;gap:4px;}
+.stt-icon img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.stt-body{
+  position:relative;z-index:0;
+  padding:28px 14px 12px;
+  display:flex;flex-direction:column;gap:6px;
+  background:#36373e;
+}
 .stt-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:4px;}
 .stt-stats{display:flex;align-items:center;gap:10px;font-size:11px;color:#b5bac1;}
+.stt-join{
+  display:flex;align-items:center;justify-content:center;
+  margin-top:8px;padding:9px 12px;border-radius:8px;
+  background:#23a559;color:#fff;font-size:12px;font-weight:600;
+  font-family:'Inter',sans-serif;text-decoration:none;
+  transition:background .15s,transform .15s;letter-spacing:.2px;
+  cursor:pointer;
+}
+.stt-join:hover{background:#1e8e4a;transform:translateY(-1px);}
+.stt-join.stt-join-off{opacity:.45;pointer-events:none;background:#4e5058;}
 .stt-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px;vertical-align:middle;}
 .stt-dot.on{background:#23a55a;}
-.stt-dot.off{background:#80848e;}
-.stt-since{font-size:10px;color:#80848e;margin-top:2px;}
+.stt-dot.off{background:rgba(255,255,255,.35);}
+.stt-since{font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;}
 .stt-desc{font-size:11px;color:#b5bac1;margin-top:4px;line-height:1.4;}
 </style>
 </head>
@@ -382,7 +453,8 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
     <div class="mb-bar" id="mbBar3"></div>
     <div class="mb-bar" id="mbBar4"></div>
   </button>
-  <div id="musicPanel">
+  <div id="musicPanel" class="glass-card">
+    <div class="glass-card-inner">
     <div class="mp-top">
       <img class="mp-cover" id="mpCover" src="" alt="cover"/>
       <div class="mp-meta">
@@ -427,6 +499,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
         <path id="mpVolWave2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
       </svg>
       <input class="mp-vol-slider" id="mpVol" type="range" min="0" max="1" step="0.01" value="0.05" style="flex:1"/>
+    </div>
     </div>
   </div>
 </div>
@@ -1047,8 +1120,10 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
         <span id="tagIcon">?</span> <span id="tagText">?????</span>
       </span>
       <div class="server-tooltip" id="serverTooltip">
-        <div class="stt-banner" id="sttBanner"></div>
-        <div class="stt-icon" id="sttIcon">V</div>
+        <div class="stt-banner-wrap">
+          <div class="stt-banner" id="sttBanner"></div>
+          <div class="stt-icon" id="sttIcon">V</div>
+        </div>
         <div class="stt-body">
           <div class="stt-name" id="sttName">Servidor</div>
           <div class="stt-stats">
@@ -1057,6 +1132,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
           </div>
           <div class="stt-since" id="sttSince"></div>
           <div class="stt-desc" id="sttDesc"></div>
+          <a class="stt-join stt-join-off" id="sttJoin" href="#" target="_blank" rel="noopener noreferrer">Entrar no servidor</a>
         </div>
       </div>
     </div>
@@ -1183,6 +1259,9 @@ function applyTheme(m) {
   _set('mpPlay','background',t.playBg);
   _set('mpPlay','color',t.ctrlColor);
   _set('mpVol','background',t.volBg);
+  _set('musicPanel','background',t.cardBg);
+  _set('musicPanel','border','1px solid '+t.cardBorder);
+  _set('musicPanel','boxShadow',t.cardShadow);
   document.querySelectorAll('.ctrl-btn').forEach(function(el){el.style.color=t.ctrlColor});
   document.querySelectorAll('.eq-bar').forEach(function(b){b.style.background=t.eqColor});
   document.querySelectorAll('.social-icon').forEach(function(el){el.style.color=t.muted});
@@ -1594,13 +1673,19 @@ if(mpVol)mpVol.addEventListener('input',function(){
 // ── Music widget toggle ───────────────────────────────────
 function toggleMusicPanel(){
   var panel=document.getElementById('musicPanel');
-  if(panel)panel.classList.toggle('open');
+  if(panel){
+    panel.classList.toggle('open');
+    if(!panel.classList.contains('open')) panel.style.transform='';
+  }
 }
 document.addEventListener('click',function(e){
   var widget=document.getElementById('musicWidget');
   if(widget && !widget.contains(e.target)){
     var panel=document.getElementById('musicPanel');
-    if(panel)panel.classList.remove('open');
+    if(panel){
+      panel.classList.remove('open');
+      panel.style.transform='';
+    }
   }
 });
 // nome estático
@@ -1650,14 +1735,109 @@ card.addEventListener('mouseleave',function(){
   card.style.transform='perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
 });
 
+// Tilt 3D no player de música (igual card principal)
+(function(){
+  var mp=document.getElementById('musicPanel');
+  if (!mp || IS_MOBILE) return;
+  mp.addEventListener('mousemove',function(e){
+    if (!mp.classList.contains('open')) return;
+    var b=mp.getBoundingClientRect();
+    var dx=(e.clientX-b.left-b.width/2)/(b.width/2);
+    var dy=(e.clientY-b.top-b.height/2)/(b.height/2);
+    var rX=-dy*10,rY=dx*10;
+    mp.style.transform='perspective(900px) rotateX('+rX+'deg) rotateY('+rY+'deg) scale3d(1.015,1.015,1.015)';
+    mp.style.setProperty('--mx',((e.clientX-b.left)/b.width*100).toFixed(1)+'%');
+    mp.style.setProperty('--my',((e.clientY-b.top)/b.height*100).toFixed(1)+'%');
+  });
+  mp.addEventListener('mouseleave',function(){
+    if (!mp.classList.contains('open')) return;
+    mp.style.transform='';
+  });
+})();
+
 // ── Listen Along (abre no Spotify) ────────────────────────
 // Os botões agora são links diretos para o Spotify
 
 // ── (servidor removido) ───────────────────────────────────
 
+// Convites por guildId — tag no perfil + tooltip
+var GUILD_TAG_INVITES = {
+  '1161745657976062042': 'pureza',
+  '777657136137764874': 'cdl',
+  '1369418194225463358': 'naoi',
+  '1354231596433150093': 'VxC3eaeQ',
+  '1457120317234479280': 'h4ck'
+};
+
 // ── Lanyard (Discord presence em tempo real) ──────────────
 (function(){
   var DISCORD_ID = '300679614680793088';
+  var tagIconGen = 0;
+
+  function normalizeBadgeHash(badge) {
+    if (badge == null || badge === '') return '';
+    var s = String(badge);
+    if (/^\d+$/.test(s)) return '';
+    return s;
+  }
+
+  window._loadTagIcon = function(el, guildId, badgeHash, tagLabel) {
+    if (!el || !guildId) return;
+    var gen = ++tagIconGen;
+    var gid = String(guildId);
+    var badge = normalizeBadgeHash(badgeHash);
+    var label = String(tagLabel || '');
+
+    function mount(urls, next) {
+      if (gen !== tagIconGen) return;
+      if (!urls || !urls.length) { if (next) next(); return; }
+      el.innerHTML = '';
+      var img = document.createElement('img');
+      img.width = 14;
+      img.height = 14;
+      img.alt = '';
+      img.referrerPolicy = 'no-referrer';
+      img.style.cssText = 'border-radius:2px;object-fit:contain;vertical-align:middle;display:inline-block;';
+      var i = 0;
+      img.onerror = function() {
+        if (gen !== tagIconGen) return;
+        i++;
+        if (i < urls.length) img.src = urls[i];
+        else { el.innerHTML = ''; if (next) next(); }
+      };
+      el.appendChild(img);
+      img.src = urls[0];
+    }
+
+    function fallbackLetter() {
+      if (gen !== tagIconGen) return;
+      el.textContent = label.charAt(0) || '?';
+    }
+
+    var badgeUrls = [];
+    if (badge) {
+      ['https://cdn.discordapp.com', 'https://media.discordapp.net'].forEach(function(host) {
+        badgeUrls.push(host + '/clan-badges/' + gid + '/' + badge + '.png?size=32');
+        badgeUrls.push(host + '/guild-tag-badges/' + gid + '/' + badge + '.png?size=32');
+      });
+    }
+
+    mount(badgeUrls, function() {
+      if (gen !== tagIconGen) return;
+      var qs = 'id=' + encodeURIComponent(gid);
+      if (label) qs += '&tag=' + encodeURIComponent(label);
+      if (GUILD_TAG_INVITES[gid]) qs += '&invite=' + encodeURIComponent(GUILD_TAG_INVITES[gid]);
+      fetch('/api/guild?' + qs)
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          if (gen !== tagIconGen) return;
+          if (!d || !d.available) { fallbackLetter(); return; }
+          var urls = (d.iconUrls && d.iconUrls.length) ? d.iconUrls.slice(0, 4) : (d.iconUrl ? [d.iconUrl] : []);
+          mount(urls, fallbackLetter);
+        })
+        .catch(fallbackLetter);
+    });
+  };
   var ws = null;
   var heartbeat = null;
   function updatePresence(data) {
@@ -1718,18 +1898,19 @@ card.addEventListener('mouseleave',function(){
     var tagContainer = document.getElementById('profileTag');
     var tagIconEl = document.getElementById('tagIcon');
     if (data.discord_user && data.discord_user.primary_guild && data.discord_user.primary_guild.tag) {
-      if (tagEl) tagEl.textContent = data.discord_user.primary_guild.tag;
+      var pg = data.discord_user.primary_guild;
+      var guildId = pg.identity_guild_id || '';
+      if (tagEl) tagEl.textContent = pg.tag;
       if (tagContainer) tagContainer.style.display = 'flex';
-      // Badge icon do clan
-      if (tagIconEl && data.discord_user.primary_guild.badge) {
-        var guildId = data.discord_user.primary_guild.identity_guild_id || '';
-        var badgeHash = data.discord_user.primary_guild.badge;
-        var badgeUrl = 'https://cdn.discordapp.com/clan-badges/' + guildId + '/' + badgeHash + '.png?size=32';
-        tagIconEl.innerHTML = '<img src="' + badgeUrl + '" width="14" height="14" style="border-radius:2px;object-fit:contain;" onerror="this.parentElement.textContent=\'🏷️\'" />';
+      // Ícone da tag — badge do clan ou ícone do servidor via API
+      if (tagIconEl && guildId && window._loadTagIcon) {
+        window._loadTagIcon(tagIconEl, guildId, pg.badge || '', pg.tag || '');
+      } else if (tagIconEl) {
+        tagIconEl.textContent = pg.tag.charAt(0) || '?';
       }
-      // Atualiza tooltip do servidor automaticamente
+      // Tooltip do servidor — qualquer tag equipada no Discord
       if (guildId && window._updateServerTooltip) {
-        window._updateServerTooltip(guildId);
+        window._updateServerTooltip(guildId, pg.badge || '', pg.tag || '');
       }
     } else {
       // Sem tag — esconde
@@ -1894,57 +2075,248 @@ card.addEventListener('mouseleave',function(){
   }, 1000);
 })();
 
-// ── Server Tag Tooltip (info do servidor ao hover — automático via Lanyard) ──
+// ── Server Tag Tooltip (info do servidor ao hover — qualquer tag do Discord) ──
 (function(){
   var currentGuildId = null;
+  var tooltipRenderGen = 0;
   var serverCache = {};
+  var TAG_GUILD_INVITES = GUILD_TAG_INVITES;
 
-  function fetchServerData(id, callback) {
-    if (serverCache[id]) { if (callback) callback(); return; }
-    serverCache[id] = { available: false, loading: true };
+  function assetExt(hash) {
+    return hash && hash.indexOf('a_') === 0 ? 'gif' : 'png';
+  }
+
+  function discordAssetUrls(kind, guildId, hash, size) {
+    if (!hash || !guildId) return [];
+    var ext = assetExt(hash);
+    var folder = kind === 'icon' ? 'icons' : (kind === 'banner' ? 'banners' : 'splashes');
+    var hosts = ['https://media.discordapp.net', 'https://cdn.discordapp.com'];
+    var urls = [];
+    hosts.forEach(function(host) {
+      urls.push(host + '/' + folder + '/' + guildId + '/' + hash + '.' + ext + '?size=' + size);
+      if (ext === 'gif') urls.push(host + '/' + folder + '/' + guildId + '/' + hash + '.png?size=' + size);
+    });
+    var seen = {};
+    return urls.filter(function(u) { if (seen[u]) return false; seen[u] = true; return true; });
+  }
+
+  function guildIconUrl(guildId, iconHash) {
+    var urls = discordAssetUrls('icon', guildId, iconHash, 128);
+    return urls[0] || '';
+  }
+
+  function bannerUrls(guildId, g) {
+    if (!g || !g.banner) return [];
+    return discordAssetUrls('banner', guildId, g.banner, 600);
+  }
+
+  function inviteUrlFromCode(code) {
+    if (!code) return '';
+    var clean = String(code).replace(/^https?:\/\/(www\.)?discord\.(gg|com\/invite)\//i, '').split('?')[0];
+    return clean ? 'https://discord.gg/' + clean : '';
+  }
+
+  function isActiveRender(guildId, gen) {
+    return gen === tooltipRenderGen && String(currentGuildId) === String(guildId);
+  }
+
+  function resetTooltipVisuals() {
+    var bannerEl = document.getElementById('sttBanner');
+    var iconEl = document.getElementById('sttIcon');
+    if (bannerEl) bannerEl.innerHTML = '';
+    if (iconEl) {
+      iconEl.innerHTML = '';
+      iconEl.textContent = '';
+    }
+  }
+
+  function clanBadgeUrl(guildId, badgeHash) {
+    if (!badgeHash || !guildId) return '';
+    return 'https://cdn.discordapp.com/clan-badges/' + guildId + '/' + badgeHash + '.png?size=128';
+  }
+
+  function mountDiscordImg(el, urls, fallbackText, guildId, gen) {
+    el.innerHTML = '';
+    if (!urls || !urls.length) {
+      el.textContent = fallbackText || '?';
+      return;
+    }
+    var img = document.createElement('img');
+    img.alt = '';
+    img.referrerPolicy = 'no-referrer';
+    img.decoding = 'async';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:9px;display:block;';
+    var i = 0;
+    img.onerror = function() {
+      if (!isActiveRender(guildId, gen)) return;
+      i++;
+      if (i < urls.length) img.src = urls[i];
+      else {
+        el.innerHTML = '';
+        el.textContent = fallbackText || '?';
+      }
+    };
+    img.onload = function() {
+      if (!isActiveRender(guildId, gen)) return;
+    };
+    el.appendChild(img);
+    img.src = urls[0];
+  }
+
+  function setBannerImage(bannerEl, urls, guildId, gen) {
+    if (!isActiveRender(guildId, gen)) return;
+    bannerEl.innerHTML = '';
+    if (!urls || !urls.length) return;
+    var img = document.createElement('img');
+    img.alt = '';
+    img.referrerPolicy = 'no-referrer';
+    img.decoding = 'async';
+    var n = 0;
+    img.onerror = function() {
+      if (!isActiveRender(guildId, gen)) return;
+      n++;
+      if (n < urls.length) img.src = urls[n];
+      else bannerEl.innerHTML = '';
+    };
+    bannerEl.appendChild(img);
+    img.src = urls[0];
+  }
+
+  function hasCompleteStats(d) {
+    return !!(d && d.name && typeof d.members === 'number' && d.members > 0);
+  }
+
+  function markAvailable(id) {
+    var d = serverCache[id];
+    if (!d) return;
+    d.available = hasCompleteStats(d);
+    d.loading = false;
+  }
+
+  function setGuildCache(id, data) {
+    serverCache[id] = Object.assign({ guildId: String(id) }, data);
+    markAvailable(id);
+  }
+
+  function applyInvite(id, inv) {
+    if (!inv || !inv.guild || String(inv.guild.id) !== String(id)) return false;
+    var g = inv.guild;
+    var iconHash = g.icon || (inv.profile && inv.profile.icon_hash) || '';
+    var bUrls = bannerUrls(id, g);
+    setGuildCache(id, {
+      name: g.name || '',
+      members: inv.approximate_member_count != null ? inv.approximate_member_count : (inv.profile && inv.profile.member_count) || 0,
+      online: inv.approximate_presence_count != null ? inv.approximate_presence_count : (inv.profile && inv.profile.online_count) || 0,
+      desc: g.description || (inv.profile && inv.profile.description) || '',
+      iconHash: iconHash,
+      iconUrl: guildIconUrl(id, iconHash),
+      iconUrls: discordAssetUrls('icon', id, iconHash, 128),
+      bannerUrl: bUrls[0] || '',
+      bannerUrls: bUrls,
+      inviteUrl: inviteUrlFromCode(inv.code) || inviteUrlFromCode(g.vanity_url_code) || inviteUrlFromCode(GUILD_TAG_INVITES[id]),
+      loading: false
+    });
+    return hasCompleteStats(serverCache[id]);
+  }
+
+  function fetchInvite(code) {
+    var clean = (code || '').replace(/^https?:\/\/(www\.)?discord\.gg\//i, '').split('?')[0];
+    return fetch('https://discord.com/api/v9/invites/' + encodeURIComponent(clean) + '?with_counts=true&with_expiration=true')
+      .then(function(r){ return r.ok ? r.json() : null; });
+  }
+
+  function fetchServerDataDirect(id, tagLabel, callback) {
+    function finish() {
+      serverCache[id].loading = false;
+      if (callback) callback();
+    }
+
+    function tagVanityCodes(tagLabel) {
+      var raw = String(tagLabel || '').trim();
+      if (!raw) return [];
+      var codes = [];
+      var alnum = raw.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      var lower = raw.toLowerCase();
+      if (alnum.length >= 2) codes.push(alnum);
+      if (lower.length >= 2 && /^[\x20-\x7e]+$/.test(lower) && codes.indexOf(lower) === -1) codes.push(lower);
+      return codes;
+    }
+
+    function tryTagVanity() {
+      var codes = tagVanityCodes(tagLabel);
+      if (!codes.length) return Promise.resolve(false);
+      var chain = Promise.resolve(false);
+      codes.forEach(function(code) {
+        chain = chain.then(function(ok) {
+          if (ok) return true;
+          return fetchInvite(code).then(function(inv) { return applyInvite(id, inv); });
+        });
+      });
+      return chain;
+    }
+
+    function tryConfiguredInvite() {
+      var code = TAG_GUILD_INVITES[id];
+      if (!code) return Promise.resolve(false);
+      return fetchInvite(code).then(function(inv){ return applyInvite(id, inv); });
+    }
 
     fetch('https://discord.com/api/guilds/' + id + '/widget.json')
       .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(widget){
+        if (!widget || !widget.instant_invite) return false;
+        var code = widget.instant_invite.split('/').pop().split('?')[0];
+        return fetchInvite(code).then(function(inv){ return applyInvite(id, inv); });
+      })
+      .catch(function(){ return false; })
+      .then(function(ok){
+        if (ok) return true;
+        return tryConfiguredInvite();
+      })
+      .then(function(ok){
+        if (ok) return true;
+        return tryTagVanity();
+      })
+      .then(finish)
+      .catch(finish);
+  }
+
+  function fetchServerData(id, tagLabel, callback) {
+    var cached = serverCache[id];
+    if (cached && cached.available && cached.guildId === String(id)) {
+      if (callback) callback();
+      return;
+    }
+    serverCache[id] = { guildId: String(id), loading: true, available: false };
+
+    var qs = 'id=' + encodeURIComponent(id);
+    if (tagLabel) qs += '&tag=' + encodeURIComponent(tagLabel);
+    if (TAG_GUILD_INVITES[id]) qs += '&invite=' + encodeURIComponent(TAG_GUILD_INVITES[id]);
+
+    fetch('/api/guild?' + qs)
+      .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(data){
-        if (!data || !data.instant_invite) {
-          // Widget desabilitado OU sem canal de convite = não mostra painel
-          serverCache[id] = { available: false, loading: false };
+        if (data && data.available && hasCompleteStats(data)) {
+          if (!data.iconUrls && data.iconHash) data.iconUrls = discordAssetUrls('icon', id, data.iconHash, 128);
+          if (!data.bannerUrls && data.bannerUrl) data.bannerUrls = [data.bannerUrl];
+          serverCache[id] = Object.assign({ guildId: String(id) }, data, { loading: false, available: true });
           if (callback) callback();
           return;
         }
-
-        serverCache[id] = { available: false, name: data.name, online: data.presence_count || 0 };
-
-        // Pega dados completos via invite
-        var code = data.instant_invite.split('/').pop();
-        fetch('https://discord.com/api/v9/invites/' + code + '?with_counts=true&with_expiration=true')
-          .then(function(r2){ return r2.ok ? r2.json() : null; })
-          .then(function(inv){
-            if (inv && inv.guild && inv.guild.icon) {
-              var iconExt = inv.guild.icon.startsWith('a_') ? 'gif' : 'png';
-              serverCache[id].iconUrl = 'https://cdn.discordapp.com/icons/' + id + '/' + inv.guild.icon + '.' + iconExt + '?size=128';
-              serverCache[id].members = inv.approximate_member_count || 0;
-              serverCache[id].online = inv.approximate_presence_count || serverCache[id].online;
-              serverCache[id].desc = inv.guild.description || '';
-              serverCache[id].name = inv.guild.name || serverCache[id].name;
-              if (inv.guild.splash) {
-                serverCache[id].bannerUrl = 'https://cdn.discordapp.com/splashes/' + id + '/' + inv.guild.splash + '.png?size=480';
-              }
-              // Tudo completo — marca como disponível
-              serverCache[id].available = true;
-            } else {
-              // Sem ícone = incompleto, não mostra
-              serverCache[id].available = false;
-            }
-            if (callback) callback();
-          }).catch(function(){ serverCache[id].available = false; if (callback) callback(); });
+        fetchServerDataDirect(id, tagLabel, callback);
       })
-      .catch(function(){ serverCache[id] = { available: false, loading: false }; if (callback) callback(); });
+      .catch(function(){
+        fetchServerDataDirect(id, tagLabel, callback);
+      });
   }
 
-  function renderTooltip(guildId) {
+  function renderTooltip(guildId, gen) {
+    if (!isActiveRender(guildId, gen)) return;
     var d = serverCache[guildId];
-    if (!d || !d.available) return;
+    if (!d || !d.available || String(d.guildId) !== String(guildId)) return;
+
+    resetTooltipVisuals();
+    if (!isActiveRender(guildId, gen)) return;
 
     var iconEl = document.getElementById('sttIcon');
     var nameEl = document.getElementById('sttName');
@@ -1955,45 +2327,95 @@ card.addEventListener('mouseleave',function(){
     var bannerEl = document.getElementById('sttBanner');
 
     if (iconEl) {
-      iconEl.innerHTML = '<img src="' + d.iconUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" />';
+      var iconUrls = (d.iconUrls && d.iconUrls.length) ? d.iconUrls.slice() : [];
+      if (d.iconUrl && iconUrls.indexOf(d.iconUrl) === -1) iconUrls.unshift(d.iconUrl);
+      if (!iconUrls.length && d.iconHash) iconUrls = discordAssetUrls('icon', guildId, d.iconHash, 128);
+      mountDiscordImg(iconEl, iconUrls, (d.name || '?').charAt(0), guildId, gen);
     }
 
     if (bannerEl) {
-      if (d.bannerUrl) {
-        bannerEl.style.backgroundImage = 'url(' + d.bannerUrl + ')';
-        bannerEl.style.backgroundSize = 'cover';
-        bannerEl.style.backgroundPosition = 'center';
-      } else {
-        bannerEl.style.backgroundImage = '';
-      }
+      var bUrls = (d.bannerUrls && d.bannerUrls.length) ? d.bannerUrls.slice() : (d.bannerUrl ? [d.bannerUrl] : []);
+      setBannerImage(bannerEl, bUrls, guildId, gen);
     }
 
     if (nameEl) nameEl.textContent = d.name || '';
-    if (onlineEl) onlineEl.textContent = d.online ? d.online.toLocaleString() : '';
-    if (membersEl) membersEl.textContent = d.members ? d.members.toLocaleString() : '';
+    if (onlineEl) onlineEl.textContent = (d.online != null && d.online !== '') ? Number(d.online).toLocaleString('pt-BR') : '0';
+    if (membersEl) membersEl.textContent = (d.members != null && d.members !== '') ? Number(d.members).toLocaleString('pt-BR') : '—';
     if (descEl) descEl.textContent = d.desc || '';
     if (sinceEl) sinceEl.textContent = '';
+
+    var joinEl = document.getElementById('sttJoin');
+    if (joinEl) {
+      var invite = d.inviteUrl || inviteUrlFromCode(GUILD_TAG_INVITES[guildId]);
+      if (invite) {
+        joinEl.href = invite;
+        joinEl.classList.remove('stt-join-off');
+      } else {
+        joinEl.href = '#';
+        joinEl.classList.add('stt-join-off');
+      }
+    }
   }
 
-  window._updateServerTooltip = function(guildId) {
+  window._updateServerTooltip = function(guildId, badgeHash, tagLabel) {
     if (!guildId) return;
-    currentGuildId = guildId;
+    var gid = String(guildId);
+    currentGuildId = gid;
+    var gen = ++tooltipRenderGen;
+    resetTooltipVisuals();
 
     var tooltipEl = document.getElementById('serverTooltip');
 
-    fetchServerData(guildId, function(){
-      var d = serverCache[guildId];
-
-      // Só mostra se tiver dados COMPLETOS (ícone + membros + nome)
-      if (!d || !d.available) {
+    fetchServerData(gid, tagLabel || '', function(){
+      if (!isActiveRender(gid, gen)) return;
+      var d = serverCache[gid];
+      if (!hasCompleteStats(d) || String(d.guildId) !== gid) {
         if (tooltipEl) tooltipEl.classList.add('stt-hidden');
         return;
       }
 
+      var iconUrls = (d.iconUrls && d.iconUrls.length) ? d.iconUrls.filter(function(u) {
+        return u.indexOf('/clan-badges/') === -1;
+      }) : [];
+      if (d.iconUrl && iconUrls.indexOf(d.iconUrl) === -1) iconUrls.unshift(d.iconUrl);
+      if (!iconUrls.length && d.iconHash) iconUrls = discordAssetUrls('icon', gid, d.iconHash, 128);
+      var badgeUrl = clanBadgeUrl(gid, badgeHash);
+      if (badgeUrl) iconUrls.push(badgeUrl);
+      d.iconUrls = iconUrls;
+
       if (tooltipEl) tooltipEl.classList.remove('stt-hidden');
-      renderTooltip(guildId);
+      renderTooltip(gid, gen);
     });
   };
+
+  // Mantém o card aberto ao mover o mouse da tag até o botão Entrar
+  (function initTooltipHover() {
+    var wrap = document.getElementById('serverTagWrap');
+    var tooltip = document.getElementById('serverTooltip');
+    if (!wrap || !tooltip) return;
+    var closeTimer = null;
+
+    function canOpen() {
+      return !tooltip.classList.contains('stt-hidden');
+    }
+
+    function open() {
+      clearTimeout(closeTimer);
+      if (canOpen()) wrap.classList.add('stt-open');
+    }
+
+    function close() {
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(function() {
+        wrap.classList.remove('stt-open');
+      }, 160);
+    }
+
+    wrap.addEventListener('mouseenter', open);
+    wrap.addEventListener('mouseleave', close);
+    tooltip.addEventListener('mouseenter', open);
+    tooltip.addEventListener('mouseleave', close);
+  })();
 })();
 </script>
 </body></html>

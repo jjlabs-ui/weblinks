@@ -18,6 +18,13 @@
       ]
     },
     {
+      "source": "/api/guild",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=120, stale-while-revalidate=300" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
       "source": "/",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
