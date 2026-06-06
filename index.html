@@ -1760,19 +1760,45 @@ card.addEventListener('mouseleave',function(){
 
 // ── (servidor removido) ───────────────────────────────────
 
-// Convites por guildId — tag no perfil + tooltip
-var GUILD_TAG_INVITES = {
-  '1161745657976062042': 'pureza',
-  '777657136137764874': 'cdl',
-  '1369418194225463358': 'naoi',
-  '1354231596433150093': 'VxC3eaeQ',
-  '1457120317234479280': 'h4ck'
-};
+// Convites conhecidos (guildId → código). Carrega /guild-invites.json + cache do navegador.
+var GUILD_INVITE_OVERRIDES = {};
+var GUILD_TAG_INVITES = GUILD_INVITE_OVERRIDES;
+var INVITE_CACHE_KEY = 'jjxvnz-guild-invite-v1';
+
+function getCachedGuildInvite(guildId) {
+  try {
+    return localStorage.getItem(INVITE_CACHE_KEY + ':' + guildId) || '';
+  } catch (e) { return ''; }
+}
+
+function setCachedGuildInvite(guildId, code) {
+  var c = String(code || '').replace(/^https?:\/\/(www\.)?discord\.(gg|com\/invite)\//i, '').split('?')[0];
+  if (!guildId || !c) return;
+  try { localStorage.setItem(INVITE_CACHE_KEY + ':' + guildId, c); } catch (e) {}
+}
+
+function resolveGuildInviteCode(guildId, tagLabel) {
+  return getCachedGuildInvite(guildId) || GUILD_INVITE_OVERRIDES[guildId] || '';
+}
+
+fetch('/guild-invites.json')
+  .then(function(r) { return r.ok ? r.json() : {}; })
+  .then(function(map) {
+    if (map && typeof map === 'object') {
+      Object.keys(map).forEach(function(k) {
+        if (k.charAt(0) !== '_' && /^\d+$/.test(k)) GUILD_INVITE_OVERRIDES[k] = map[k];
+      });
+      GUILD_TAG_INVITES = GUILD_INVITE_OVERRIDES;
+    }
+  })
+  .catch(function() {});
 
 // ── Lanyard (Discord presence em tempo real) ──────────────
 (function(){
   var DISCORD_ID = '300679614680793088';
   var tagIconGen = 0;
+  var lastPrimaryGuildId = null;
+  var lastPrimaryTag = '';
 
   function normalizeBadgeHash(badge) {
     if (badge == null || badge === '') return '';
@@ -1826,7 +1852,8 @@ var GUILD_TAG_INVITES = {
       if (gen !== tagIconGen) return;
       var qs = 'id=' + encodeURIComponent(gid);
       if (label) qs += '&tag=' + encodeURIComponent(label);
-      if (GUILD_TAG_INVITES[gid]) qs += '&invite=' + encodeURIComponent(GUILD_TAG_INVITES[gid]);
+      var invCode = resolveGuildInviteCode(gid, label);
+      if (invCode) qs += '&invite=' + encodeURIComponent(invCode);
       fetch('/api/guild?' + qs)
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) {
@@ -1899,22 +1926,32 @@ var GUILD_TAG_INVITES = {
     var tagIconEl = document.getElementById('tagIcon');
     if (data.discord_user && data.discord_user.primary_guild && data.discord_user.primary_guild.tag) {
       var pg = data.discord_user.primary_guild;
-      var guildId = pg.identity_guild_id || '';
-      if (tagEl) tagEl.textContent = pg.tag;
+      var guildId = String(pg.identity_guild_id || '');
+      var tagLabel = String(pg.tag || '');
+      if (tagEl) tagEl.textContent = tagLabel;
       if (tagContainer) tagContainer.style.display = 'flex';
-      // Ícone da tag — badge do clan ou ícone do servidor via API
-      if (tagIconEl && guildId && window._loadTagIcon) {
-        window._loadTagIcon(tagIconEl, guildId, pg.badge || '', pg.tag || '');
-      } else if (tagIconEl) {
-        tagIconEl.textContent = pg.tag.charAt(0) || '?';
+      if (guildId && (guildId !== lastPrimaryGuildId || tagLabel !== lastPrimaryTag)) {
+        if (window._onGuildTagChange) {
+          window._onGuildTagChange(guildId, tagLabel, lastPrimaryGuildId);
+        }
+        lastPrimaryGuildId = guildId;
+        lastPrimaryTag = tagLabel;
       }
-      // Tooltip do servidor — qualquer tag equipada no Discord
+      if (tagIconEl && guildId && window._loadTagIcon) {
+        window._loadTagIcon(tagIconEl, guildId, pg.badge || '', tagLabel);
+      } else if (tagIconEl) {
+        tagIconEl.textContent = tagLabel.charAt(0) || '?';
+      }
       if (guildId && window._updateServerTooltip) {
-        window._updateServerTooltip(guildId, pg.badge || '', pg.tag || '');
+        window._updateServerTooltip(guildId, pg.badge || '', tagLabel, true);
       }
     } else {
-      // Sem tag — esconde
       if (tagContainer) tagContainer.style.display = 'none';
+      if (lastPrimaryGuildId && window._onGuildTagChange) {
+        window._onGuildTagChange(null, '', lastPrimaryGuildId);
+      }
+      lastPrimaryGuildId = null;
+      lastPrimaryTag = '';
     }
 
     // Status dot
@@ -2078,9 +2115,51 @@ var GUILD_TAG_INVITES = {
 // ── Server Tag Tooltip (info do servidor ao hover — qualquer tag do Discord) ──
 (function(){
   var currentGuildId = null;
+  var currentTagLabel = '';
   var tooltipRenderGen = 0;
   var serverCache = {};
-  var TAG_GUILD_INVITES = GUILD_TAG_INVITES;
+  var GUILD_CACHE_TTL = 90000;
+
+  function tagInviteCandidates(tagLabel) {
+    var raw = String(tagLabel || '').trim();
+    if (!raw) return [];
+    var out = [];
+    var seen = {};
+    function add(value) {
+      var c = String(value || '').replace(/^https?:\/\/(www\.)?discord\.(gg|com\/invite)\//i, '').split('?')[0].toLowerCase();
+      if (c.length >= 2 && c.length <= 32 && !seen[c]) { seen[c] = true; out.push(c); }
+    }
+    var hashMatch = raw.match(/#([^\s#]{2,32})/g);
+    if (hashMatch) hashMatch.forEach(function(h) { add(h.slice(1)); });
+    raw.split('/').slice(1).forEach(function(seg) {
+      seg.split(/[\s|︵♡•·]+/).forEach(function(tok) { add(tok); });
+    });
+    raw.split(/[\s/|︵♡#•·]+/).forEach(function(tok) {
+      if (/^[a-zA-Z0-9_]{2,32}$/.test(tok)) add(tok);
+    });
+    var alnum = raw.replace(/[^a-zA-Z0-9]/g, '');
+    if (alnum.length >= 2) add(alnum);
+    return out;
+  }
+
+  function rememberInviteFromData(id, d) {
+    if (!d) return;
+    var code = '';
+    if (d.inviteCode) code = d.inviteCode;
+    else if (d.inviteUrl) code = d.inviteUrl.replace(/^https?:\/\/(www\.)?discord\.gg\//i, '');
+    if (code) setCachedGuildInvite(id, code);
+  }
+
+  window._onGuildTagChange = function(newGuildId, newTag, oldGuildId) {
+    if (oldGuildId && oldGuildId !== newGuildId) {
+      delete serverCache[oldGuildId];
+    }
+    if (newGuildId) {
+      delete serverCache[newGuildId];
+      currentGuildId = String(newGuildId);
+      currentTagLabel = newTag || '';
+    }
+  };
 
   function assetExt(hash) {
     return hash && hash.indexOf('a_') === 0 ? 'gif' : 'png';
@@ -2106,8 +2185,10 @@ var GUILD_TAG_INVITES = {
   }
 
   function bannerUrls(guildId, g) {
-    if (!g || !g.banner) return [];
-    return discordAssetUrls('banner', guildId, g.banner, 600);
+    if (!g) return [];
+    if (g.banner) return discordAssetUrls('banner', guildId, g.banner, 600);
+    if (g.splash) return discordAssetUrls('splash', guildId, g.splash, 600);
+    return [];
   }
 
   function inviteUrlFromCode(code) {
@@ -2213,9 +2294,12 @@ var GUILD_TAG_INVITES = {
       iconUrls: discordAssetUrls('icon', id, iconHash, 128),
       bannerUrl: bUrls[0] || '',
       bannerUrls: bUrls,
-      inviteUrl: inviteUrlFromCode(inv.code) || inviteUrlFromCode(g.vanity_url_code) || inviteUrlFromCode(GUILD_TAG_INVITES[id]),
-      loading: false
+      inviteUrl: inviteUrlFromCode(inv.code) || inviteUrlFromCode(g.vanity_url_code) || inviteUrlFromCode(resolveGuildInviteCode(id, '')),
+      inviteCode: (inv.code || g.vanity_url_code || '').split('?')[0],
+      loading: false,
+      fetchedAt: Date.now()
     });
+    rememberInviteFromData(id, serverCache[id]);
     return hasCompleteStats(serverCache[id]);
   }
 
@@ -2227,23 +2311,17 @@ var GUILD_TAG_INVITES = {
 
   function fetchServerDataDirect(id, tagLabel, callback) {
     function finish() {
-      serverCache[id].loading = false;
+      var row = serverCache[id];
+      if (row) {
+        row.loading = false;
+        row.fetchedAt = Date.now();
+        rememberInviteFromData(id, row);
+      }
       if (callback) callback();
     }
 
-    function tagVanityCodes(tagLabel) {
-      var raw = String(tagLabel || '').trim();
-      if (!raw) return [];
-      var codes = [];
-      var alnum = raw.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-      var lower = raw.toLowerCase();
-      if (alnum.length >= 2) codes.push(alnum);
-      if (lower.length >= 2 && /^[\x20-\x7e]+$/.test(lower) && codes.indexOf(lower) === -1) codes.push(lower);
-      return codes;
-    }
-
     function tryTagVanity() {
-      var codes = tagVanityCodes(tagLabel);
+      var codes = tagInviteCandidates(tagLabel);
       if (!codes.length) return Promise.resolve(false);
       var chain = Promise.resolve(false);
       codes.forEach(function(code) {
@@ -2256,7 +2334,7 @@ var GUILD_TAG_INVITES = {
     }
 
     function tryConfiguredInvite() {
-      var code = TAG_GUILD_INVITES[id];
+      var code = resolveGuildInviteCode(id, tagLabel);
       if (!code) return Promise.resolve(false);
       return fetchInvite(code).then(function(inv){ return applyInvite(id, inv); });
     }
@@ -2281,32 +2359,36 @@ var GUILD_TAG_INVITES = {
       .catch(finish);
   }
 
-  function fetchServerData(id, tagLabel, callback) {
-    var cached = serverCache[id];
-    if (cached && cached.available && cached.guildId === String(id)) {
+  function fetchServerData(id, tagLabel, callback, forceRefresh) {
+    var gid = String(id);
+    var cached = serverCache[gid];
+    var fresh = cached && cached.fetchedAt && (Date.now() - cached.fetchedAt < GUILD_CACHE_TTL);
+    if (!forceRefresh && cached && cached.available && cached.guildId === gid && fresh) {
       if (callback) callback();
       return;
     }
-    serverCache[id] = { guildId: String(id), loading: true, available: false };
+    serverCache[gid] = { guildId: gid, loading: true, available: false };
 
-    var qs = 'id=' + encodeURIComponent(id);
+    var qs = 'id=' + encodeURIComponent(gid);
     if (tagLabel) qs += '&tag=' + encodeURIComponent(tagLabel);
-    if (TAG_GUILD_INVITES[id]) qs += '&invite=' + encodeURIComponent(TAG_GUILD_INVITES[id]);
+    var invCode = resolveGuildInviteCode(gid, tagLabel);
+    if (invCode) qs += '&invite=' + encodeURIComponent(invCode);
 
     fetch('/api/guild?' + qs)
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(data){
         if (data && data.available && hasCompleteStats(data)) {
-          if (!data.iconUrls && data.iconHash) data.iconUrls = discordAssetUrls('icon', id, data.iconHash, 128);
+          if (!data.iconUrls && data.iconHash) data.iconUrls = discordAssetUrls('icon', gid, data.iconHash, 128);
           if (!data.bannerUrls && data.bannerUrl) data.bannerUrls = [data.bannerUrl];
-          serverCache[id] = Object.assign({ guildId: String(id) }, data, { loading: false, available: true });
+          serverCache[gid] = Object.assign({ guildId: gid }, data, { loading: false, available: true, fetchedAt: Date.now() });
+          rememberInviteFromData(gid, data);
           if (callback) callback();
           return;
         }
-        fetchServerDataDirect(id, tagLabel, callback);
+        fetchServerDataDirect(gid, tagLabel, callback);
       })
       .catch(function(){
-        fetchServerDataDirect(id, tagLabel, callback);
+        fetchServerDataDirect(gid, tagLabel, callback);
       });
   }
 
@@ -2346,7 +2428,7 @@ var GUILD_TAG_INVITES = {
 
     var joinEl = document.getElementById('sttJoin');
     if (joinEl) {
-      var invite = d.inviteUrl || inviteUrlFromCode(GUILD_TAG_INVITES[guildId]);
+      var invite = d.inviteUrl || inviteUrlFromCode(resolveGuildInviteCode(guildId, currentTagLabel));
       if (invite) {
         joinEl.href = invite;
         joinEl.classList.remove('stt-join-off');
@@ -2357,16 +2439,17 @@ var GUILD_TAG_INVITES = {
     }
   }
 
-  window._updateServerTooltip = function(guildId, badgeHash, tagLabel) {
+  window._updateServerTooltip = function(guildId, badgeHash, tagLabel, forceRefresh) {
     if (!guildId) return;
     var gid = String(guildId);
     currentGuildId = gid;
+    currentTagLabel = tagLabel || '';
     var gen = ++tooltipRenderGen;
     resetTooltipVisuals();
 
     var tooltipEl = document.getElementById('serverTooltip');
 
-    fetchServerData(gid, tagLabel || '', function(){
+    fetchServerData(gid, currentTagLabel, function(){
       if (!isActiveRender(gid, gen)) return;
       var d = serverCache[gid];
       if (!hasCompleteStats(d) || String(d.guildId) !== gid) {
@@ -2385,8 +2468,16 @@ var GUILD_TAG_INVITES = {
 
       if (tooltipEl) tooltipEl.classList.remove('stt-hidden');
       renderTooltip(gid, gen);
-    });
+    }, !!forceRefresh);
   };
+
+  setInterval(function() {
+    if (!currentGuildId) return;
+    fetchServerData(currentGuildId, currentTagLabel, function() {
+      var d = serverCache[currentGuildId];
+      if (hasCompleteStats(d)) renderTooltip(currentGuildId, tooltipRenderGen);
+    }, true);
+  }, GUILD_CACHE_TTL);
 
   // Mantém o card aberto ao mover o mouse da tag até o botão Entrar
   (function initTooltipHover() {

@@ -1,5 +1,7 @@
 node_modules/
+bot/
 dist/
+.tools/
 .vercel/
 .env
 .env.local

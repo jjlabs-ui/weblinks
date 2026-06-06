@@ -2,7 +2,6 @@ function assetExt(hash) {
   return hash && hash.startsWith('a_') ? 'gif' : 'png';
 }
 
-/** URLs do CDN (media primeiro — carrega melhor fora do Discord) */
 function discordAssetUrls(kind, guildId, hash, size) {
   if (!hash || !guildId) return [];
   const ext = assetExt(hash);
@@ -11,39 +10,37 @@ function discordAssetUrls(kind, guildId, hash, size) {
   const urls = [];
   for (const host of hosts) {
     urls.push(`${host}/${folder}/${guildId}/${hash}.${ext}?size=${size}`);
-    if (ext === 'gif') {
-      urls.push(`${host}/${folder}/${guildId}/${hash}.png?size=${size}`);
-    }
+    if (ext === 'gif') urls.push(`${host}/${folder}/${guildId}/${hash}.png?size=${size}`);
   }
   return [...new Set(urls)];
 }
 
 function guildIconUrl(guildId, iconHash) {
-  const urls = discordAssetUrls('icon', guildId, iconHash, 128);
-  return urls[0] || '';
+  return discordAssetUrls('icon', guildId, iconHash, 128)[0] || '';
 }
 
-/** Só banner oficial do servidor (splash é imagem do convite, não usar aqui) */
 function bannerUrls(guildId, guild) {
-  if (!guild.banner) return [];
-  return discordAssetUrls('banner', guildId, guild.banner, 600);
+  if (!guild) return [];
+  if (guild.banner) return discordAssetUrls('banner', guildId, guild.banner, 600);
+  if (guild.splash) return discordAssetUrls('splash', guildId, guild.splash, 600);
+  return [];
 }
 
 function inviteUrlFromCode(code) {
-  if (!code) return '';
-  const clean = String(code)
-    .replace(/^https?:\/\/(www\.)?discord\.(gg|com\/invite)\//i, '')
-    .split('?')[0];
+  const clean = cleanInviteCode(code);
   return clean ? `https://discord.gg/${clean}` : '';
 }
 
+function cleanInviteCode(code) {
+  if (!code) return '';
+  return String(code)
+    .replace(/^https?:\/\/(www\.)?discord\.(gg|com\/invite)\//i, '')
+    .split('?')[0]
+    .trim();
+}
+
 function isComplete(data) {
-  return !!(
-    data &&
-    data.name &&
-    typeof data.members === 'number' &&
-    data.members > 0
-  );
+  return !!(data && data.name && typeof data.members === 'number' && data.members > 0);
 }
 
 function packFromInvite(id, inv) {
@@ -51,6 +48,7 @@ function packFromInvite(id, inv) {
   const g = inv.guild;
   const iconHash = g.icon || inv.profile?.icon_hash || '';
   const bannerList = bannerUrls(id, g);
+  const inviteCode = cleanInviteCode(inv.code) || cleanInviteCode(g.vanity_url_code);
   const data = {
     available: true,
     name: g.name || '',
@@ -62,15 +60,14 @@ function packFromInvite(id, inv) {
     iconUrls: discordAssetUrls('icon', id, iconHash, 128),
     bannerUrl: bannerList[0] || '',
     bannerUrls: bannerList,
-    inviteUrl: inviteUrlFromCode(inv.code) || inviteUrlFromCode(g.vanity_url_code),
+    inviteUrl: inviteUrlFromCode(inviteCode),
+    inviteCode: inviteCode || '',
   };
   return isComplete(data) ? data : null;
 }
 
 async function fetchInvite(code) {
-  const clean = String(code || '')
-    .replace(/^https?:\/\/(www\.)?discord\.(gg|com\/invite)\//i, '')
-    .split('?')[0];
+  const clean = cleanInviteCode(code);
   if (!clean) return null;
   const res = await fetch(
     `https://discord.com/api/v9/invites/${encodeURIComponent(clean)}?with_counts=true&with_expiration=true`,
@@ -80,25 +77,25 @@ async function fetchInvite(code) {
   return res.json();
 }
 
-function tagVanityCandidates(tag) {
+function tagInviteCandidates(tag) {
   const raw = String(tag || '').trim();
   if (!raw) return [];
   const out = [];
-  const lower = raw.toLowerCase();
-  const alnum = raw.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-  // Tag só com emoji/símbolos — vanity por texto não funciona (ex.: HIT com caractere especial)
-  if (alnum.length >= 2) out.push(alnum);
-  if (lower.length >= 2 && /^[\x20-\x7e]+$/.test(lower) && !out.includes(lower)) out.push(lower);
-  return [...new Set(out)];
-}
-
-async function tryInviteCodes(id, codes) {
-  for (const code of codes) {
-    const inv = await fetchInvite(code);
-    const data = packFromInvite(id, inv);
-    if (data) return data;
-  }
-  return null;
+  const add = (value) => {
+    const c = cleanInviteCode(value).toLowerCase();
+    if (c.length >= 2 && c.length <= 32 && !out.includes(c)) out.push(c);
+  };
+  const hashTags = raw.match(/#([^\s#]{2,32})/g);
+  if (hashTags) hashTags.forEach((h) => add(h.slice(1)));
+  raw.split('/').slice(1).forEach((segment) => {
+    segment.split(/[\s|︵♡•·]+/).forEach((tok) => add(tok));
+  });
+  raw.split(/[\s/|︵♡#•·]+/).forEach((tok) => {
+    if (/^[a-zA-Z0-9_]{2,32}$/.test(tok)) add(tok);
+  });
+  const alnum = raw.replace(/[^a-zA-Z0-9]/g, '');
+  if (alnum.length >= 2) add(alnum);
+  return out;
 }
 
 async function fromWidget(id) {
@@ -107,15 +104,9 @@ async function fromWidget(id) {
   });
   if (!res.ok) return null;
   const widget = await res.json();
-  if (!widget) return null;
-
-  if (widget.instant_invite) {
-    const code = widget.instant_invite.split('/').pop().split('?')[0];
-    const data = packFromInvite(id, await fetchInvite(code));
-    if (data) return data;
-  }
-
-  return null;
+  if (!widget?.instant_invite) return null;
+  const code = widget.instant_invite.split('/').pop().split('?')[0];
+  return packFromInvite(id, await fetchInvite(code));
 }
 
 const GUILD_INVITES = {
@@ -124,10 +115,23 @@ const GUILD_INVITES = {
   '1369418194225463358': 'naoi',
   '1354231596433150093': 'VxC3eaeQ',
   '1457120317234479280': 'h4ck',
+  '1336123345443360779': 'h1t',
 };
 
+function mergeEnvInvites() {
+  const map = { ...GUILD_INVITES };
+  try {
+    if (process.env.GUILD_INVITES_JSON) {
+      Object.assign(map, JSON.parse(process.env.GUILD_INVITES_JSON));
+    }
+  } catch {
+    /* ignore */
+  }
+  return map;
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 'public, s-maxage=90, stale-while-revalidate=180');
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -135,29 +139,35 @@ export default async function handler(req, res) {
 
   const id = req.query.id;
   const tag = req.query.tag || '';
-  const manualInvite = req.query.invite || GUILD_INVITES[String(id)] || '';
+  const invites = mergeEnvInvites();
+  const cachedInvite = cleanInviteCode(req.query.invite || '');
+  const manualInvite = cachedInvite || invites[String(id)] || '';
 
   if (!id || !/^\d{17,20}$/.test(String(id))) {
     return res.status(400).json({ available: false, error: 'invalid guild id' });
   }
 
   try {
+    const tried = new Set();
+    const tryCode = async (code) => {
+      const c = cleanInviteCode(code);
+      if (!c || tried.has(c)) return null;
+      tried.add(c);
+      return packFromInvite(id, await fetchInvite(c));
+    };
+
     let data = await fromWidget(id);
 
-    if (!data && manualInvite) {
-      const inv = await fetchInvite(manualInvite);
-      data = packFromInvite(id, inv);
-    }
+    if (!data && manualInvite) data = await tryCode(manualInvite);
 
     if (!data) {
-      const codes = tagVanityCandidates(tag);
-      data = await tryInviteCodes(id, codes);
+      for (const code of tagInviteCandidates(tag)) {
+        data = await tryCode(code);
+        if (data) break;
+      }
     }
 
-    if (!data) {
-      return res.status(200).json({ available: false });
-    }
-
+    if (!data) return res.status(200).json({ available: false });
     return res.status(200).json(data);
   } catch {
     return res.status(200).json({ available: false });
