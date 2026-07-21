@@ -109,17 +109,8 @@ async function fromWidget(id) {
   return packFromInvite(id, await fetchInvite(code));
 }
 
-const GUILD_INVITES = {
-  '1161745657976062042': 'pureza',
-  '777657136137764874': 'cdl',
-  '1369418194225463358': 'naoi',
-  '1354231596433150093': 'VxC3eaeQ',
-  '1457120317234479280': 'h4ck',
-  '1336123345443360779': 'h1t',
-};
-
 function mergeEnvInvites() {
-  const map = { ...GUILD_INVITES };
+  const map = {};
   try {
     if (process.env.GUILD_INVITES_JSON) {
       Object.assign(map, JSON.parse(process.env.GUILD_INVITES_JSON));

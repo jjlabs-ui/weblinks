@@ -4,7 +4,7 @@
   "outputDirectory": ".",
   "routes": [
     { "src": "/guild-invites.json", "dest": "/public/guild-invites.json" },
-    { "src": "/videoplayback.mp4", "dest": "/public/videoplayback.mp4" },
+    { "src": "/bg-video.mp4", "dest": "/public/bg-video.mp4" },
     { "src": "/(.*\\.mp3)", "dest": "/public/$1" },
     { "src": "/(.*)", "dest": "/$1" }
   ],

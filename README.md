@@ -1,27 +1,23 @@
-# JJ Links
+# JJ Links v2
 
 Página bio pessoal de **jjxvnz**, publicada em [jjxvnz.bio](https://www.jjxvnz.bio).
 
-Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com integrações em tempo real e contador público de acessos.
+Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com vídeo de fundo via YouTube, integrações em tempo real e contador público de acessos.
 
-## O que é
+## O que mudou na v2
 
-Um link-in-bio com visual escuro, efeitos de glassmorphism e tilt 3D, pensado para reunir perfil, redes e mídia em uma única página.
-
-## O que faz
-
-- Exibe perfil e presença do Discord em tempo real (Lanyard)
-- Player de música com playlist aleatória, reverb/eco e equalizer (Web Audio API)
-- Contador público de visitas, atualizado a cada acesso
-- Vídeo de fundo, cursor customizado, partículas e layout responsivo
+- Fundo em vídeo do YouTube (sem camada preta por cima)
+- Card com glass mais legível sobre o vídeo
+- Removido o MP4 local de fundo (~38 MB)
 
 ## Estrutura
 
 | Parte | Descrição |
 |-------|-----------|
 | `index.html` | Interface e toda a lógica do front-end |
-| `public/` | Áudios da playlist e vídeo de fundo |
+| `public/` | Áudios da playlist e `guild-invites.json` |
 | `api/views.js` | Contador de visitas |
+| `api/guild.js` | Dados de servidores Discord para o tooltip |
 | `vercel.json` | Configuração de cache e deploy na Vercel |
 
 ## Licença

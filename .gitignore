@@ -1,13 +1,8 @@
 node_modules/
-bot/
-dist/
-.tools/
-.vercel/
 .env
 .env.local
 .env.*.local
 *.log
 .DS_Store
 Thumbs.db
-WebLinks/
-.vercel
+.vercel/
