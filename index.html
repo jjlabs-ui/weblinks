@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://cdn.discordapp.com"/>
 <link rel="preconnect" href="https://media.discordapp.net"/>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;cursor:none}
@@ -189,7 +189,7 @@ body.v2{
 
 .views-badge{
   position:absolute;top:14px;right:16px;display:flex;align-items:center;gap:5px;
-  border-radius:999px;padding:6px 12px;font-size:11px;font-weight:600;white-space:nowrap;
+  border-radius:10px;padding:6px 10px;font-size:11px;font-weight:600;white-space:nowrap;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:10;
   transition:background .8s,color .8s,border-color .8s,transform .2s;letter-spacing:.2px;
   background:var(--t-card,rgba(8,8,8,.78));border:1px solid var(--t-card-border,rgba(255,255,255,.1));color:var(--t-muted,rgba(255,255,255,.62));
@@ -200,6 +200,18 @@ body.v2 .tilt-card{
   background:var(--t-card);
   border:1px solid var(--t-card-border);
   box-shadow:var(--t-shadow);
+  backdrop-filter:blur(28px) saturate(1.35);
+  -webkit-backdrop-filter:blur(28px) saturate(1.35);
+  transition:background .35s ease,border-color .35s ease,box-shadow .35s ease;
+}
+body.v2 .tilt-card:hover{
+  background:var(--t-card-hover);
+}
+body.v2 .views-badge{
+  background:var(--t-card);
+  border-color:var(--t-card-border);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
 }
 body.v2 #musicPanel{
   background:var(--t-card);
@@ -213,7 +225,6 @@ body.v2 #musicBtn{
 }
 body.v2 #splash{background:var(--t-splash)}
 body.v2 #actExpandBtn{color:#0a0a0a}
-body.v2 .tilt-card:hover{background:var(--t-card-hover)}
 body.v2 .profile-card:hover{background:rgba(255,255,255,.22);border-color:rgba(0,0,0,.1)}
 body.v2 .social-icon{color:#0a0a0a;opacity:.5}
 body.v2 .social-icon:hover{opacity:1;background:rgba(255,255,255,.28);box-shadow:0 6px 18px rgba(0,0,0,.12)}
@@ -239,9 +250,9 @@ body.v2 #discordStatus{color:rgba(0,0,0,.58)!important}
   object-fit:cover;
   display:block;
 }
-.avatar,.mp-cover,.act-card img{filter:grayscale(100%)}
+.avatar{filter:grayscale(100%)}
 .avatar-ring:hover .avatar{filter:grayscale(100%) !important}
-.profile-avatar,#discordAvatarDecoration,#tagIcon img,#discordStatus img,.profile-badge-svg,.stt-banner img,.stt-icon img{filter:none!important}
+.profile-avatar,#discordAvatarDecoration,#tagIcon img,#discordStatus img,.profile-badge-svg,.stt-banner img,.stt-icon img,.act-card img,.mp-cover{filter:none!important}
 
 .name{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(24px,5vw,30px);font-weight:400;letter-spacing:.06em;margin-top:-4px;transition:color 1s,text-shadow 1s;position:relative;text-transform:lowercase;color:var(--t-text,#f5f5f5)}
 .name::before,.name::after{content:attr(data-text);position:absolute;left:0;top:0;width:100%;color:inherit}
@@ -381,7 +392,7 @@ body.v2 #discordStatus{color:rgba(0,0,0,.58)!important}
 .mp-vol{display:flex;align-items:center;gap:6px;padding:0 2px;}
 .mp-bar:hover .mp-thumb{opacity:1}
 input.mp-vol-slider::-webkit-slider-thumb:hover{transform:scale(1.3);}
-.mp-cover{width:58px;height:58px;border-radius:12px;object-fit:cover;flex-shrink:0;filter:grayscale(100%);box-shadow:0 4px 16px rgba(0,0,0,.35);}
+.mp-cover{width:58px;height:58px;border-radius:12px;object-fit:cover;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.35);}
 .mp-title{font-size:13.5px;font-weight:700;color:var(--t-text,#f5f5f5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px;}
 .mp-artist{font-size:11px;color:var(--t-muted,rgba(255,255,255,.62));margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mp-time{font-size:10px;color:var(--t-faint,rgba(255,255,255,.38));font-variant-numeric:tabular-nums;min-width:32px;}
@@ -480,10 +491,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
   </svg>
 </div>
 <div id="bgVideo" aria-hidden="true">
-  <video id="bgVideoEl" muted loop playsinline preload="auto" poster="">
-    <source src="/bg-video.mp4" type="video/mp4"/>
-    <source src="/public/bg-video.mp4" type="video/mp4"/>
-  </video>
+  <video id="bgVideoEl" muted loop playsinline webkit-playsinline preload="metadata" poster=""></video>
 </div>
 
 
@@ -669,19 +677,18 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
       border:1px solid rgba(0,0,0,.12);
     }
     .act-card:hover{background:rgba(255,255,255,.28);border-color:rgba(0,0,0,.22)}
-    .act-card.act-spotify:hover{background:rgba(29,185,84,.14);border-color:rgba(29,185,84,.38)}
     .act-card.act-game:hover{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.22)}
+    .act-card.act-spotify:hover{background:rgba(255,255,255,.28);border-color:rgba(0,0,0,.22)}
     .act-card [data-act-label]{font-size:9px;color:rgba(0,0,0,.55);text-transform:uppercase;font-weight:600;letter-spacing:.5px;transition:color .2s}
-    .act-card.act-spotify:hover [data-act-label]{color:#15803d}
+    .act-card:hover [data-act-label]{color:rgba(0,0,0,.72)}
     .act-card [data-name]{font-size:12.5px;font-weight:600;color:#0a0a0a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .act-card [data-detail]{font-size:10px;color:rgba(0,0,0,.62);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .act-card [data-state]{font-size:10px;color:rgba(0,0,0,.45);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .act-card .act-time{font-size:9px;color:rgba(0,0,0,.45);font-variant-numeric:tabular-nums;min-width:32px}
     .act-card .act-bar-track{flex:1;height:2px;background:rgba(0,0,0,.12);border-radius:99px}
     .act-card .act-bar-fill{height:100%;background:#0a0a0a;border-radius:99px;transition:width 1s linear,background .25s}
-    .act-card.act-spotify:hover .act-bar-fill{background:#1DB954}
     .act-card .act-spotify-icon{color:rgba(0,0,0,.55);flex-shrink:0;transition:color .2s}
-    .act-card.act-spotify:hover .act-spotify-icon{color:#1DB954}
+    .act-card:hover .act-spotify-icon{color:rgba(0,0,0,.72)}
     .act-card.act-secondary-card{
       overflow:hidden;
       max-height:150px;
@@ -1042,7 +1049,7 @@ input.mp-vol-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;b
         ctx0.fillText(initial, 27, 27);
         imgHtml = '<img data-fetch-icon="' + card.appId + '" src="' + canvas.toDataURL() + '" style="width:54px;height:54px;border-radius:12px;object-fit:cover;flex-shrink:0;" />';
       } else if (card.img) {
-        imgHtml = '<img src="' + card.img + '" style="width:54px;height:54px;border-radius:12px;object-fit:cover;flex-shrink:0;filter:grayscale(100%);" onerror="this.style.opacity=\'0.3\'" />';
+        imgHtml = '<img src="' + card.img + '" style="width:54px;height:54px;border-radius:12px;object-fit:cover;flex-shrink:0;" onerror="this.style.opacity=\'0.3\'" />';
       }
 
       var progressHtml = '';
@@ -1199,8 +1206,9 @@ var IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || wi
 var MEDIA_BASE = '/public/';
 function mediaUrl(file){ return encodeURI(MEDIA_BASE + file.replace(/^\//, '')); }
 
-// ── Background video (local MP4 — mais rápido que YouTube) ──
+// ── Background video (local MP4) ──
 var BG_VIDEO_CANDIDATES = ['/bg-video.mp4', mediaUrl('bg-video.mp4')];
+var BG_VIDEO_TIMEOUT = IS_MOBILE ? 3500 : 9000;
 var bgVideoCandidateIdx = 0;
 var bgVideoReady = false;
 var bgVideoEl = null;
@@ -1215,7 +1223,7 @@ function setSplashProgress(pct, label) {
 function markBgVideoReady(fallback) {
   if (bgVideoReady) return;
   bgVideoReady = true;
-  setSplashProgress(100, fallback ? 'sem vídeo — clique para entrar' : 'pronto');
+  setSplashProgress(100, fallback ? (IS_MOBILE ? 'toque para entrar' : 'sem vídeo — clique para entrar') : 'pronto');
   if (splash) splash.classList.add('ready');
 }
 
@@ -1236,20 +1244,31 @@ function initBgVideoPreload() {
     return;
   }
 
-  setSplashProgress(8, 'carregando vídeo');
+  bgVideoEl.preload = IS_MOBILE ? 'metadata' : 'auto';
+  bgVideoEl.setAttribute('playsinline', '');
+  bgVideoEl.setAttribute('webkit-playsinline', '');
+  setSplashProgress(5, IS_MOBILE ? 'preparando' : 'carregando vídeo');
+
+  bgVideoEl.addEventListener('loadedmetadata', function() {
+    setSplashProgress(IS_MOBILE ? 60 : 35, IS_MOBILE ? 'toque para entrar' : 'carregando vídeo');
+    if (IS_MOBILE) markBgVideoReady(false);
+  });
 
   bgVideoEl.addEventListener('progress', function() {
     if (!bgVideoEl.buffered.length || !bgVideoEl.duration) return;
     var end = bgVideoEl.buffered.end(bgVideoEl.buffered.length - 1);
     var pct = Math.min(92, Math.round((end / bgVideoEl.duration) * 100));
-    setSplashProgress(pct, 'carregando vídeo');
+    setSplashProgress(pct, IS_MOBILE ? 'toque para entrar' : 'carregando vídeo');
   });
 
-  bgVideoEl.addEventListener('canplaythrough', function() { markBgVideoReady(false); });
-  bgVideoEl.addEventListener('loadeddata', function() {
-    setSplashProgress(70, 'quase lá');
-    if (bgVideoEl.readyState >= 3) markBgVideoReady(false);
+  bgVideoEl.addEventListener('canplay', function() {
+    if (bgVideoEl.readyState >= 2) markBgVideoReady(false);
   });
+
+  if (!IS_MOBILE) {
+    bgVideoEl.addEventListener('canplaythrough', function() { markBgVideoReady(false); });
+  }
+
   bgVideoEl.addEventListener('error', function() {
     setBgVideoSource();
   });
@@ -1258,12 +1277,12 @@ function initBgVideoPreload() {
 
   setTimeout(function() {
     if (!bgVideoReady) markBgVideoReady(true);
-  }, 12000);
+  }, BG_VIDEO_TIMEOUT);
 }
 
 function startBgVideo() {
   if (!bgVideoEl) bgVideoEl = document.getElementById('bgVideoEl');
-  if (!bgVideoEl) return;
+  if (!bgVideoEl || !bgVideoEl.src) return;
   bgVideoEl.play().catch(function(){});
 }
 
@@ -1282,7 +1301,7 @@ var T = {
     progThumb:'#0a0a0a', volBg:'rgba(0,0,0,.12)', volThumb:'#0a0a0a',
     playBg:'#0a0a0a', ctrlColor:'#fff',
     avatarBg:'transparent',
-    avatarFilter:'grayscale(100%)', discordFilter:'none', musicFilter:'grayscale(100%)',
+    avatarFilter:'grayscale(100%)', discordFilter:'none', musicFilter:'none',
     viewsBg:'rgba(255,255,255,.14)', viewsBorder:'rgba(255,255,255,.38)',
     splashBg:'rgba(0,0,0,.72)', splashText:'#000', splashMuted:'rgba(255,255,255,.5)',
     splashTitle:'#fff', splashSub:'rgba(255,255,255,.5)',
@@ -1334,9 +1353,6 @@ function applyTheme(m) {
   root.style.setProperty('--t-music-btn-color', t.musicBtnColor);
   root.style.setProperty('--t-online-border', t.onlineBorder);
   root.style.setProperty('--t-bg-veil', t.bgVeil);
-  _set('tiltCard','background',t.cardBg);
-  _set('tiltCard','border','1px solid '+t.cardBorder);
-  _set('tiltCard','boxShadow',t.cardShadow);
   _set('mainName','textShadow',t.nameGlow);
   _set('mainName','color',t.bodyText);
   _set('mainDivider','background',t.divider);
@@ -1354,8 +1370,6 @@ function applyTheme(m) {
   _set('mpCur','color',t.faint);
   _set('mpDur','color',t.faint);
   _set('discordName','color',t.bodyText);
-  _set('viewsBadge','background',t.viewsBg);
-  _set('viewsBadge','border','1px solid '+t.viewsBorder);
   _set('viewsBadge','color',t.muted);
   _set('profileCard','background','transparent');
   _set('profileCard','border','1px solid transparent');
@@ -1524,50 +1538,91 @@ document.addEventListener('click',function(e){
 
 // ── Audio playlist ────────────────────────────────────────
 var playlist=[
-  {src:mediaUrl('2. DROPO, zTokyo - Memórias.mp3'),                          title:'Memórias',         artist:'DROPO, zTokyo',   cover:'https://cdn-images.dzcdn.net/images/cover/440a79a0e4d7d1d60e7f5d7ef2bd6c1f/250x250-000000-80-0-0.jpg' },
-  {src:mediaUrl('2. Dudu x Leozin - Tudo acaba (Prod. Ecologyk).mp3'),       title:'Tudo Acaba',       artist:'Dudu x Leozin',   cover:'https://cdn-images.dzcdn.net/images/cover/070c38c828cfdb9020cec145aff21fef/250x250-000000-80-0-0.jpg' },
-  {src:mediaUrl('lilgiela33 - Mesma Pessoa (prod. peedzh).mp3'),              title:'Mesma Pessoa',     artist:'lilgiela33',      cover:'https://cdn-images.dzcdn.net/images/cover/2eeba4f412a69a85d56a43f2944d13b8/250x250-000000-80-0-0.jpg' },
-  {src:mediaUrl('lilgiela33 - Pixei a casa (Áudio Oficial).mp3'),             title:'Pixei a Casa',     artist:'lilgiela33',      cover:'https://cdn-images.dzcdn.net/images/cover/2eeba4f412a69a85d56a43f2944d13b8/250x250-000000-80-0-0.jpg' },
-  {src:mediaUrl('Nosred - eu amo a hello kitty ✧˚🎀.mp3'),                    title:'Eu Amo a Hello Kitty', artist:'Nosred',      cover:'https://cdn-images.dzcdn.net/images/cover/9e10d6acfd1bcb86b4bb75f781d063c8/250x250-000000-80-0-0.jpg' }
+  {src:mediaUrl('Metric - Help I\'m Alive.mp3'), title:'Help I\'m Alive', artist:'Metric', cover:'https://cdn-images.dzcdn.net/images/cover/df1e3dd3a90ad641912ceaa5a26ac954/250x250-000000-80-0-0.jpg'}
 ];
-playlist.sort(function(){return Math.random()-.5});
 var trackIdx=0,audio=new Audio();audio.volume=0.05;
 
-// ── Reverb/Echo effect ────────────────────────────────────
-var reverbCtx=null,reverbSource=null,convolver=null,reverbGain=null,dryGain=null;
+// ── Reverb + eco (espaço vazio) ───────────────────────────
+var reverbCtx=null,reverbSource=null,convolver=null,reverbGain=null,dryGain=null,masterGain=null;
 function initReverb(){
   if(reverbCtx)return;
   try{
     reverbCtx=new(window.AudioContext||window.webkitAudioContext)();
     reverbSource=reverbCtx.createMediaElementSource(audio);
-    convolver=reverbCtx.createConvolver();
-    reverbGain=reverbCtx.createGain();
+
+    masterGain=reverbCtx.createGain();
+    masterGain.gain.value=1;
+    masterGain.connect(reverbCtx.destination);
+
     dryGain=reverbCtx.createGain();
-    // Ambiente grande e vazio: reverb longo (3.5s), wet alto
-    reverbGain.gain.value=0.55;
-    dryGain.gain.value=0.75;
-    // Gera impulse response sintético — sala grande
+    dryGain.gain.value=0.38;
+
+    reverbGain=reverbCtx.createGain();
+    reverbGain.gain.value=0.78;
+
+    var preDelay=reverbCtx.createDelay(0.12);
+    preDelay.delayTime.value=0.042;
+
+    var wetFilter=reverbCtx.createBiquadFilter();
+    wetFilter.type='highpass';
+    wetFilter.frequency.value=160;
+    wetFilter.Q.value=0.7;
+
+    convolver=reverbCtx.createConvolver();
     var rate=reverbCtx.sampleRate;
-    var len=Math.floor(rate*3.5); // 3.5 segundos de cauda
+    var len=Math.floor(rate*6.2);
     var impulse=reverbCtx.createBuffer(2,len,rate);
     for(var ch=0;ch<2;ch++){
       var data=impulse.getChannelData(ch);
       for(var i=0;i<len;i++){
-        // Decaimento exponencial lento + ruído branco = reverb de sala grande
-        var decay=Math.pow(1-i/len,1.8);
-        // Adiciona reflexões iniciais (early reflections)
-        var earlyRef=(i<rate*0.08)?Math.sin(i*0.3)*0.4:0;
-        data[i]=(Math.random()*2-1)*decay*0.9+earlyRef;
+        var t=i/len;
+        var decay=Math.pow(1-t,2.15);
+        var early=(i<rate*0.14)?Math.sin(i*0.06*(ch+1.2))*0.32*(1-i/(rate*0.14)):0;
+        data[i]=(Math.random()*2-1)*decay*0.82+early;
       }
     }
     convolver.buffer=impulse;
-    // Routing: source → dry → destination
-    //          source → convolver → reverbGain → destination
+
+    var echoDelay=reverbCtx.createDelay(1.4);
+    echoDelay.delayTime.value=0.36;
+    var echoFb=reverbCtx.createGain();
+    echoFb.gain.value=0.31;
+    var echoWet=reverbCtx.createGain();
+    echoWet.gain.value=0.24;
+
+    var echoDelay2=reverbCtx.createDelay(2.0);
+    echoDelay2.delayTime.value=0.78;
+    var echoWet2=reverbCtx.createGain();
+    echoWet2.gain.value=0.16;
+
+    analyser=reverbCtx.createAnalyser();
+    analyser.fftSize=512;
+    analyser.smoothingTimeConstant=0.82;
+    dataArr=new Uint8Array(analyser.frequencyBinCount);
+
     reverbSource.connect(dryGain);
-    dryGain.connect(reverbCtx.destination);
-    reverbSource.connect(convolver);
-    convolver.connect(reverbGain);
-    reverbGain.connect(reverbCtx.destination);
+    dryGain.connect(masterGain);
+
+    reverbSource.connect(preDelay);
+    preDelay.connect(convolver);
+    convolver.connect(wetFilter);
+    wetFilter.connect(reverbGain);
+    reverbGain.connect(masterGain);
+
+    reverbSource.connect(echoDelay);
+    echoDelay.connect(echoWet);
+    echoWet.connect(masterGain);
+    echoDelay.connect(echoFb);
+    echoFb.connect(echoDelay);
+
+    reverbSource.connect(echoDelay2);
+    echoDelay2.connect(echoWet2);
+    echoWet2.connect(masterGain);
+
+    masterGain.connect(analyser);
+    analyser.connect(reverbCtx.destination);
+
+    audioCtx=reverbCtx;
   }catch(e){}
 }
 
@@ -1599,30 +1654,7 @@ var bands=[3,8,18,36];
 
 function initAudioCtx(){
   if(audioCtx)return;
-  try{
-    // Reutiliza o contexto do reverb se já existe
-    if(reverbCtx){
-      audioCtx=reverbCtx;
-      analyser=audioCtx.createAnalyser();
-      analyser.fftSize=512;
-      analyser.smoothingTimeConstant=0.8;
-      dataArr=new Uint8Array(analyser.frequencyBinCount);
-      // Conecta analyser depois do dry para pegar o sinal processado
-      if(dryGain){
-        dryGain.connect(analyser);
-        analyser.connect(audioCtx.destination);
-      }
-    } else {
-      audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-      analyser=audioCtx.createAnalyser();
-      analyser.fftSize=512;
-      analyser.smoothingTimeConstant=0.8;
-      dataArr=new Uint8Array(analyser.frequencyBinCount);
-      source=audioCtx.createMediaElementSource(audio);
-      source.connect(analyser);
-      analyser.connect(audioCtx.destination);
-    }
-  }catch(e){}
+  initReverb();
 }
 
 function eqLoop(){
@@ -1771,7 +1803,7 @@ applyTheme("v2");
 
 function enterSite() {
   if (splash._done) return;
-  if (!bgVideoReady) return;
+  if (!bgVideoReady && !IS_MOBILE) return;
   splash._done = true;
   splash.classList.add('hidden');
   setTimeout(function(){ splash.style.display = 'none'; }, 900);
@@ -1781,12 +1813,14 @@ function enterSite() {
   playTrack();
 }
 
-// fallback — qualquer clique na página
+// fallback — qualquer toque/clique na página
 document.addEventListener('click', function(){ enterSite(); });
+document.addEventListener('touchend', function(){ enterSite(); }, {passive:true});
 
 
-// ── Tilt 3D ───────────────────────────────────────────────
+// ── Tilt 3D (desktop) ─────────────────────────────────────
 var card=document.getElementById('tiltCard');
+if (!IS_MOBILE && card) {
 card.addEventListener('mousemove',function(e){
   var b=card.getBoundingClientRect();
   var dx=(e.clientX-b.left-b.width/2)/(b.width/2),dy=(e.clientY-b.top-b.height/2)/(b.height/2);
@@ -1798,6 +1832,16 @@ card.addEventListener('mousemove',function(e){
 card.addEventListener('mouseleave',function(){
   card.style.transform='perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
 });
+}
+
+// Esconde skip quando só há uma faixa
+(function(){
+  var hide = playlist.length <= 1;
+  ['mpPrev','mpNext'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.style.display = hide ? 'none' : '';
+  });
+})();
 
 // Tilt 3D no player de música (igual card principal)
 (function(){

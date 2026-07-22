@@ -2,23 +2,24 @@
 
 Página bio pessoal de **jjxvnz**, publicada em [jjxvnz.bio](https://www.jjxvnz.bio).
 
-Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com vídeo de fundo via YouTube, integrações em tempo real e contador público de acessos.
+Site estático em HTML, CSS e JavaScript, hospedado na Vercel, com vídeo de fundo local, integrações Discord em tempo real e player com efeito de eco/reverb.
 
-## O que mudou na v2
+## Destaques
 
-- Fundo em vídeo do YouTube (sem camada preta por cima)
-- Card com glass mais legível sobre o vídeo
-- Removido o MP4 local de fundo (~38 MB)
+- Card glass monocromático com Discord colorido
+- Vídeo de fundo otimizado para mobile (entrada rápida no splash)
+- Player com **Help I'm Alive** — Metric + reverb/eco de espaço vazio
+- Contador de visitas e tooltip de servidor Discord
 
 ## Estrutura
 
 | Parte | Descrição |
 |-------|-----------|
 | `index.html` | Interface e toda a lógica do front-end |
-| `public/` | Áudios da playlist e `guild-invites.json` |
+| `public/` | `bg-video.mp4`, faixa MP3 e `guild-invites.json` |
 | `api/views.js` | Contador de visitas |
 | `api/guild.js` | Dados de servidores Discord para o tooltip |
-| `vercel.json` | Configuração de cache e deploy na Vercel |
+| `vercel.json` | Cache e rotas de deploy |
 
 ## Licença
 
