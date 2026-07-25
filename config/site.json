@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "siteUrl": "https://www.jjxvnz.bio",
+    "title": "jjxvnz",
+    "tagline": "quanto mais alto, mais visado",
+    "description": "jjxvnz — Full Stack Developer. quanto mais alto, mais visado.",
+    "locale": "pt-BR",
+    "keywords": ["jjxvnz", "full stack developer", "joão pedro", "weblink"]
+  },
+  "profile": {
+    "name": "jjxvnz",
+    "username": "@jjxvnz",
+    "role": "Full Stack Developer",
+    "bio": "quanto mais alto, mais visado.",
+    "location": "Brasil",
+    "timezone": "America/Sao_Paulo",
+    "availability": "available",
+    "availabilityLabel": "Disponível para contato",
+    "fallbackAvatar": "https://cdn.discordapp.com/embed/avatars/0.png",
+    "discordId": "300679614680793088",
+    "githubUsername": "jjlabs-ui",
+    "steamId": "76561199079342427"
+  },
+  "weather": {
+    "lat": -23.5505,
+    "lon": -46.6333
+  },
+  "links": [
+    {
+      "id": "github",
+      "name": "GitHub",
+      "description": "jjlabs-ui",
+      "url": "https://github.com/jjlabs-ui",
+      "icon": "github"
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "description": "@jjxvnz",
+      "url": "https://discord.com/users/300679614680793088",
+      "icon": "message-circle"
+    },
+    {
+      "id": "website",
+      "name": "Website",
+      "description": "jjdev.dev",
+      "url": "https://jjdev.dev/",
+      "icon": "globe"
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "description": "Perfil público",
+      "url": "https://open.spotify.com/user/31n5vqf2es5ssgo66xiel5wvnfqy",
+      "icon": "music"
+    },
+    {
+      "id": "steam",
+      "name": "Steam",
+      "description": "JJ",
+      "url": "https://steamcommunity.com/profiles/76561199079342427/",
+      "icon": "gamepad-2"
+    },
+    {
+      "id": "twitch",
+      "name": "Twitch",
+      "description": "twitch.tv/jjxvnz",
+      "url": "https://twitch.tv/jjxvnz",
+      "icon": "twitch"
+    }
+  ],
+  "features": {
+    "preloader": true,
+    "easterEggs": true,
+    "weatherWidget": true,
+    "viewsCounter": true
+  },
+  "views": {
+    "namespace": "jjxvnz-bio-v4",
+    "baseCount": 3041
+  }
+}
